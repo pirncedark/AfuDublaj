@@ -13,7 +13,7 @@ from afudublaj.i18n import t
 
 logger = logging.getLogger(__name__)
 
-ISSUES_URL = 'https://github.com/keremss7/lingolay/issues/new/choose'
+ISSUES_URL = 'https://github.com/pirncedark/AfuDublaj/issues/new/choose'
 
 _STYLE = """
 QDialog {

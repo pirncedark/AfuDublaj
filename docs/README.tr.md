@@ -1,19 +1,19 @@
 <div align="center">
 
-<img src="../src/afudublaj/assets/icon.png" width="112" alt="Lingolay logosu">
+<img src="../src/afudublaj/assets/icon.png" width="112" alt="Afu Dublaj logosu">
 
-# Lingolay
+# Afu Dublaj
 
 **Her oyunu oyna, her videoyu izle — kendi dilinde, gerçek zamanlı ve tamamen çevrimdışı.**
 
-Lingolay ekrandaki altyazıyı okur, Meta'nın NLLB‑200 yapay zekâ modeliyle *kendi bilgisayarında* çevirir,<br>
+Afu Dublaj ekrandaki altyazıyı okur, Meta'nın NLLB‑200 yapay zekâ modeliyle *kendi bilgisayarında* çevirir,<br>
 çeviriyi ekranın üstünde yüzen bir pencerede gösterir — istersen **doğal bir sesle dublaj** da yapar.
 
-[**⬇ Windows için indir**](https://github.com/keremss7/lingolay/releases/latest) · [🇬🇧 English](../README.md) · [🇷🇺 Русский](README.ru.md)
+[**⬇ Windows için indir**](https://github.com/pirncedark/AfuDublaj/releases/latest) · [🇬🇧 English](../README.md) · [🇷🇺 Русский](README.ru.md)
 
 > 🆕 **v2.5'te yeni: Ekranı çevir.** `Ctrl+Alt+T`'ye bas; ekrandaki tüm yazılar (menüler, notlar, eşya açıklamaları, HUD) kamera çevirmeni gibi **yerinde**, oyunun kendi stiliyle çevrilir.
 
-<img src="images/tr/demo.png" alt="Lingolay gerçek zamanlı çeviri" width="820">
+<img src="images/tr/demo.png" alt="Afu Dublaj gerçek zamanlı çeviri" width="820">
 
 </div>
 
@@ -23,7 +23,7 @@ Lingolay ekrandaki altyazıyı okur, Meta'nın NLLB‑200 yapay zekâ modeliyle 
 - 🌍 **21 dil, her yöne** — İngilizce, Japonca, Çince, Korece, Rusça, Almanca, Fransızca, İspanyolca, Portekizce, İtalyanca, Felemenkçe, Lehçe, Ukraynaca, Arapça, Türkçe, Hintçe, Urduca, Bengalce, Vietnamca, Endonezce, Tayca. Ekrandaki dil → hedef dil serbest.
 - 🎮 **Oyunlar için tasarlandı** — oyun modu (otomatik borderless), tıklamayı geçiren ve her zaman üstte kalan overlay, oyun içinde çalışan kısayollar.
 - 🗣️ **Yapay zekâ dublaj** — çeviriler Piper sesleriyle (yine çevrimdışı) seslendirilir, bu sırada oyunun sesi otomatik kısılır. Tayca dışındaki tüm hedef dillerde kullanılabilir.
-- 🎭 **Konuşmacıya duyarlı dublaj** *(yeni, deneysel)* — Lingolay oyunu ya da videoyu dinler, konuşanın **kadın mı erkek mi** olduğunu anlar ve her repliği **uygun sesle** seslendirir. 20 dilde, tamamen çevrimdışı; Lingolay'in kendi sesi hiç duyulmaz. *Dublaj → Konuşanın sesine uydur* ile açılır (Windows 10 2004+).
+- 🎭 **Konuşmacıya duyarlı dublaj** *(yeni, deneysel)* — Afu Dublaj oyunu ya da videoyu dinler, konuşanın **kadın mı erkek mi** olduğunu anlar ve her repliği **uygun sesle** seslendirir. 20 dilde, tamamen çevrimdışı; Afu Dublaj'ın kendi sesi hiç duyulmaz. *Dublaj → Konuşanın sesine uydur* ile açılır (Windows 10 2004+).
 - 🔎 **Ekranı çevir** *(yeni, deneysel)* — `Ctrl+Alt+T`'ye basınca ekrandaki her yazı **bulunduğu yerde**, orijinalin rengi, dış çizgisi ve boyutuyla çevrilir; menüler, notlar ve HUD oyun sanki kendi dilindeymiş gibi okunur. Gizlemek için tekrar bas.
 - 🧠 **Akıllı altyazı takibi** — harf harf yazılan altyazının bitmesini bekler, OCR titremesini yok sayar, aynı cümleyi iki kez çevirmez.
 - 🇹🇷 **Türkçeye özel son işlem** — i/İ büyük harf kuralları, efekt etiketleri ([LAUGHING] → [GÜLÜYOR]), tekrar temizliği.
@@ -38,8 +38,8 @@ Lingolay ekrandaki altyazıyı okur, Meta'nın NLLB‑200 yapay zekâ modeliyle 
 ## 🚀 Hızlı başlangıç
 
 **Windows uygulaması (Python gerekmez):**
-1. [Son sürümden](https://github.com/keremss7/lingolay/releases/latest) `Lingolay-…-windows-x64.zip` dosyasını indir ve bir klasöre çıkar.
-2. `Lingolay.exe`'yi çalıştır. İlk açılışta bir çeviri modeli seç — Hugging Face'ten bir kez indirilir (*Hızlı* ~620 MB, *Kaliteli* ~1,3 GB).
+1. [Son sürümden](https://github.com/pirncedark/AfuDublaj/releases/latest) `AfuDublaj-…-windows-x64.zip` dosyasını indir ve bir klasöre çıkar.
+2. `AfuDublaj.exe`'yi çalıştır. İlk açılışta bir çeviri modeli seç — Hugging Face'ten bir kez indirilir (*Hızlı* ~620 MB, *Kaliteli* ~1,3 GB).
 3. **Bölge seç** ile altyazının etrafına bir kutu çiz, **Başlat**'a bas (`Ctrl+Alt+S`). Hepsi bu.
 
 > SmartScreen uyarısında **Ek bilgi → Yine de çalıştır**. Model yüklenmezse [VC++ Redistributable](https://aka.ms/vs/17/release/vc_redist.x64.exe) kur.
@@ -47,7 +47,7 @@ Lingolay ekrandaki altyazıyı okur, Meta'nın NLLB‑200 yapay zekâ modeliyle 
 **Python ile:**
 
 ```bash
-git clone https://github.com/keremss7/lingolay.git
+git clone https://github.com/pirncedark/AfuDublaj.git
 cd AfuDublaj
 python -m venv .venv && .venv\Scripts\activate
 pip install -e ".[all]"
@@ -69,22 +69,16 @@ afudublaj --download fast voice:tr     # çeviri modeli + Türkçe dublaj sesi
 - Her oyun/platform için **profil kaydet**.
 - Japonca, Çince, Korece… okumak için Windows'a o dili ekle (*Ayarlar → Saat ve Dil → Dil*, “Optik karakter tanıma” ile).
 
-## 💛 Lingolay'e destek ol
-
-Lingolay ücretsiz, açık kaynak ve reklamsızdır; öyle kalacak. İşine yaradıysa geliştirilmesine **[GitHub Sponsors](https://github.com/sponsors/keremss7)** üzerinden, tek seferlik ya da aylık ve dilediğin tutarla destek olabilirsin.
-
-Destekler hata düzeltmelerine, yeni dillere ve dublaj seslerine, gerçek oyunlarla yapılan testlere gider. Teşekkürler! 🙏
-
 ## 🤝 Katkı
 
 Her türlü katkıya açığız: kod, arayüz çevirisi, hata bildirimi, oyun ön ayarları ya da bir ⭐. Ayrıntılar: [CONTRIBUTING.md](../CONTRIBUTING.md).
 
 ## 📜 Lisans
 
-Lingolay, [GNU GPL v3](../LICENSE) lisanslı özgür yazılımdır. Modeller bu depoda **bulunmaz**; orijinal yayıncılarından indirilir. NLLB‑200 (Meta AI) **CC‑BY‑NC‑4.0 — yalnızca ticari olmayan kullanım** lisanslıdır.
+Afu Dublaj, [GNU GPL v3](../LICENSE) lisanslı özgür yazılımdır. Modeller bu depoda **bulunmaz**; orijinal yayıncılarından indirilir. NLLB‑200 (Meta AI) **CC‑BY‑NC‑4.0 — yalnızca ticari olmayan kullanım** lisanslıdır.
 
 <div align="center">
 
-**Lingolay işine yaradıysa bir ⭐ bırakmayı unutma — projenin büyümesine gerçekten yardım ediyor.**
+**Afu Dublaj işine yaradıysa bir ⭐ bırakmayı unutma — projenin büyümesine gerçekten yardım ediyor.**
 
 </div>

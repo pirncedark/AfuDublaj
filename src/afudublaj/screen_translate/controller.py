@@ -48,7 +48,7 @@ def build_items(frame, lines, translate, skip_rects=(), translate_many=None):
     """
     items = []
     blocks = [b for b in group_blocks(lines)
-              if not any(QRect(*r).intersects(QRect(*b.rect)) for r in skip_rects)]  # skip Lingolay's windows
+              if not any(QRect(*r).intersects(QRect(*b.rect)) for r in skip_rects)]  # skip Afu Dublaj's windows
     texts = [b.text for b in blocks]
     translations = translate_many(texts) if translate_many else [translate(t) for t in texts]
     for block, translation in zip(blocks, translations):
