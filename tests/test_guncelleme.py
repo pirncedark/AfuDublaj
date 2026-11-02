@@ -239,7 +239,8 @@ def test_kurulum_baslat_betik_ve_popen(tmp_path, monkeypatch):
     assert str(zip_yolu) in argumanlar
     if guncelleme.sys.platform == 'win32':
         assert secenekler['creationflags'] & subprocess.CREATE_NO_WINDOW
-        assert secenekler['creationflags'] & subprocess.DETACHED_PROCESS
+        assert secenekler['creationflags'] & subprocess.CREATE_NEW_PROCESS_GROUP
+        assert not secenekler['creationflags'] & subprocess.DETACHED_PROCESS
 
     metin = betik.read_text(encoding='utf-8')
     for parca in ('Get-Process', '120', '.eski', 'models', 'Start-Process',

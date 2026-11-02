@@ -244,9 +244,10 @@ try {
         Copy-Item -Path $eskiModeller -Destination (Join-Path $AppDir 'models') -Recurse -Force
     }
     $yeniExe = Join-Path $AppDir $ExeName
-    $surec = Start-Process -FilePath $yeniExe -PassThru
+    $surec = $null
+    try { $surec = Start-Process -FilePath $yeniExe -PassThru } catch { $surec = $null }
     Start-Sleep -Seconds 8
-    if (-not (Get-Process -Id $surec.Id -ErrorAction SilentlyContinue)) {
+    if ((-not $surec) -or (-not (Get-Process -Id $surec.Id -ErrorAction SilentlyContinue))) {
         if (Test-Path -LiteralPath $AppDir) { Remove-Item -LiteralPath $AppDir -Recurse -Force }
         if (Test-Path -LiteralPath $eski) { Move-Item -LiteralPath $eski -Destination $AppDir -Force }
         Start-Process -FilePath (Join-Path $AppDir $ExeName)
@@ -272,9 +273,10 @@ def kurulum_baslat(zip_yolu: Path, uygulama_klasoru=None, exe_adi='AfuDublaj.exe
     betik.write_text(_KURUCU_BETIGI, encoding='utf-8')
     bayraklar = 0
     if sys.platform == 'win32':
+        # DETACHED_PROCESS would start powershell without a console and it silently exits (verified e2e)
         bayraklar = (
             getattr(subprocess, 'CREATE_NO_WINDOW', 0x08000000)
-            | getattr(subprocess, 'DETACHED_PROCESS', 0x00000008)
+            | getattr(subprocess, 'CREATE_NEW_PROCESS_GROUP', 0x00000200)
         )
     subprocess.Popen(
         [
