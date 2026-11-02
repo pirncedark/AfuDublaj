@@ -2,8 +2,10 @@ import logging
 import sys
 from pathlib import Path
 
+import threading
+
 from PySide6.QtCore import Qt, QTimer, Signal
-from PySide6.QtGui import QBrush, QColor, QFont, QIcon, QKeySequence, QPainter
+from PySide6.QtGui import QBrush, QColor, QFont, QGuiApplication, QIcon, QKeySequence, QPainter
 from PySide6.QtWidgets import (
     QApplication,
     QCheckBox,
@@ -28,7 +30,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from lingolay import __app_name__, __version__
+from lingolay import APP_NAME, UPDATE_REPO, __version__
 from lingolay.capture.region import RegionSelector
 from lingolay.core.config import Profile, get_settings, save_settings
 from lingolay.core.hotkeys import ACTION_LABELS, HotkeyManager, parse_hotkey_string
@@ -40,27 +42,27 @@ from lingolay.overlay.window import OverlayWindow
 logger = logging.getLogger(__name__)
 
 
-# ── Color palette ──────────────────────────────────────────────────────────────
-BG = '#0d0d0f'
-SURFACE = '#161619'
-SURFACE2 = '#1e1e22'
-SURFACE3 = '#262629'
-BORDER = '#28282e'
-BORDER2 = '#333339'
-ACCENT = '#ff6929'
-ACCENT_H = '#ff7f44'
-ACCENT_D = '#e05420'
-ACCENT_G = 'rgba(255,105,41,0.12)'
-RED = '#f04040'
-RED_H = '#f55b5b'
-RED_G = 'rgba(240,64,64,0.10)'
-GREEN = '#30cc74'
-GREEN_G = 'rgba(48,204,116,0.12)'
-TEXT = '#ececef'
-TEXT2 = '#8a8a92'
-TEXT3 = '#4a4a52'
+# ── Color palette (Afu) ────────────────────────────────────────────────────────
+BG = '#0E1117'
+SURFACE = '#161B27'
+SURFACE2 = '#1C2333'
+SURFACE3 = '#222A3D'
+BORDER = '#1C2333'
+BORDER2 = '#2A344A'
+ACCENT = '#5B6CF8'
+ACCENT_H = '#4B5BE8'
+ACCENT_D = '#3D4DC6'
+ACCENT_G = 'rgba(91,108,248,0.12)'
+RED = '#EF4444'
+RED_H = '#DC2626'
+RED_G = 'rgba(239,68,68,0.10)'
+GREEN = '#10B981'
+GREEN_G = 'rgba(16,185,129,0.12)'
+TEXT = '#E2E8F0'
+TEXT2 = '#9CA3AF'
+TEXT3 = '#6B7280'
 MONO = "'Consolas', 'Menlo', 'DejaVu Sans Mono', monospace"
-
+SAYAC_URL = ''
 STYLE = f"""
 QMainWindow, QWidget {{
     background: {BG};
@@ -371,6 +373,11 @@ class MainWindow(QMainWindow):
     _sig_hk_game_mode = Signal()
     _sig_hk_toggle_tts = Signal()
     _sig_hk_translate_screen = Signal()
+    _sig_update_found = Signal(dict)
+    _sig_update_checked = Signal(object)
+    _sig_update_check_failed = Signal()
+    _sig_update_downloaded = Signal(object)
+    _sig_update_download_failed = Signal()
 
     def __init__(self):
         super().__init__()
@@ -390,6 +397,14 @@ class MainWindow(QMainWindow):
         self._tts_timer = QTimer(self)
         self._tts_timer.setInterval(25)
         self._tts_timer.timeout.connect(self._poll_tts_playback)
+        self._pending_update = None
+        self._update_worker = None
+        self._bg_checker = None
+        self._sig_update_found.connect(self._on_update_found)
+        self._sig_update_checked.connect(self._on_manual_check_finished)
+        self._sig_update_check_failed.connect(self._on_manual_check_error)
+        self._sig_update_downloaded.connect(self._start_install_and_quit)
+        self._sig_update_download_failed.connect(self._on_update_install_failed)
         icon = _asset_path('icon.png')
         if icon.exists():
             self.setWindowIcon(QIcon(str(icon)))
@@ -399,10 +414,10 @@ class MainWindow(QMainWindow):
         self._load_settings_to_ui()
         self._overlay_shown_once = False
         QTimer.singleShot(50, self._pipeline.initialize)
-        self.setWindowTitle(__app_name__)
+        self.setWindowTitle(APP_NAME)
         self.resize(920, 760)
         self.setMinimumSize(800, 640)
-
+        self._start_background_update_check()
     # ── Layout skeleton ──────────────────────────────────────────────────────────
     def _build_ui(self):
         self.setStyleSheet(STYLE)
@@ -450,14 +465,14 @@ class MainWindow(QMainWindow):
         logo = QFrame()
         logo.setFixedSize(36, 36)
         logo.setStyleSheet(f'background: {ACCENT}; border-radius: 9px;')
-        logo_lbl = QLabel('L', logo)
+        logo_lbl = QLabel('A', logo)
         logo_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
         logo_lbl.setGeometry(0, 0, 36, 36)
         logo_lbl.setStyleSheet('color: #ffffff; font-size: 19px; font-weight: 900; background: transparent;')
         b_lay.addWidget(logo)
         text_col = QVBoxLayout()
         text_col.setSpacing(0)
-        name = QLabel(__app_name__)
+        name = QLabel(APP_NAME)
         name.setStyleSheet(f'color: {TEXT}; font-size: 16px; font-weight: 800; background: transparent;')
         ver = QLabel(f'v{__version__}')
         ver.setStyleSheet(f'color: {TEXT2}; font-size: 10px; font-weight: 700; background: transparent;')
@@ -486,7 +501,7 @@ class MainWindow(QMainWindow):
         self._btn_diagnostic.setStyleSheet(f"""
             QPushButton#nav_btn {{ background: transparent; color: {TEXT2}; border: 1px solid transparent;
                 border-radius: 8px; padding: 0; text-align: left; font-size: 12px; font-weight: 600; }}
-            QPushButton#nav_btn:hover {{ background: rgba(255,105,41,0.08); color: {TEXT}; }}""")
+            QPushButton#nav_btn:hover {{ background: rgba(91,108,248,0.08); color: {TEXT}; }}""")
         self._btn_diagnostic.clicked.connect(self._open_diagnostic_dialog)
         lay.addWidget(self._btn_diagnostic)
 
@@ -514,7 +529,7 @@ class MainWindow(QMainWindow):
                 border-radius: 8px; padding: 0; text-align: left; font-size: 13px; font-weight: 600; }}
             QPushButton#nav_btn:hover {{ background: {SURFACE}; color: {TEXT}; }}
             QPushButton#nav_btn:checked {{ background: {ACCENT_G}; color: {ACCENT};
-                border: 1px solid rgba(255,105,41,0.30); font-weight: 700; }}""")
+                border: 1px solid rgba(91,108,248,0.30); font-weight: 700; }}""")
         btn.clicked.connect(lambda checked=False, i=index: self._switch_page(i))
         return btn
 
@@ -537,10 +552,12 @@ class MainWindow(QMainWindow):
         h_lay.setContentsMargins(0, 0, 0, 6)
         h_lay.setSpacing(2)
         tl = QLabel(title)
+        tl.setWordWrap(True)
         tl.setStyleSheet(f'color: {TEXT}; font-size: 21px; font-weight: 800; background: transparent;')
         h_lay.addWidget(tl)
         if subtitle:
             sl = QLabel(subtitle)
+            sl.setWordWrap(True)
             sl.setStyleSheet(f'color: {TEXT2}; font-size: 12px; background: transparent;')
             h_lay.addWidget(sl)
         lay.addWidget(head)
@@ -573,6 +590,11 @@ class MainWindow(QMainWindow):
         page, lay = self._page(t('Appearance'), t('Overlay colors, size, transparency and interface language'))
         lay.addWidget(self._make_overlay_style_card())
         lay.addWidget(self._make_general_card())
+        lay.addWidget(self._make_update_card())
+        lay.addWidget(self._make_share_card())
+        community_card = self._make_community_card()
+        if community_card is not None:
+            lay.addWidget(community_card)
         lay.addStretch()
         return page
 
@@ -955,6 +977,11 @@ class MainWindow(QMainWindow):
         voice_row.addWidget(self._cmb_voice, 1)
         card.add_row(voice_row)
         self._refresh_voice_choices()
+        self._chk_natural = QCheckBox(t('Natural voice (internet required)'))
+        self._chk_natural.setChecked(tts.natural_voice)
+        card.add_widget(self._chk_natural)
+        card.add_widget(InfoBox(t('The text to be read aloud is sent to the Microsoft speech service. Without internet the offline voice is used.'), 'tip'))
+
         self._chk_smooth = QCheckBox(t('Natural flow (finish sentences instead of cutting them off)'))
         self._chk_smooth.setChecked(tts.smooth_flow)
         self._chk_smooth.setToolTip(t('Lets each line finish, adds short pauses between sentences and speaks a little faster to catch up. Turn off to get the previous behavior.'))
@@ -1104,8 +1131,256 @@ class MainWindow(QMainWindow):
         row.addWidget(_field_label(t('Language:')))
         row.addWidget(self._combo_ui_lang, 1)
         card.add_row(row)
-        card.add_widget(InfoBox(t('Want Lingolay in your language? Translating the interface is a single JSON file — see CONTRIBUTING.md on GitHub.'), 'tip'))
+        card.add_widget(InfoBox(t('Want Afu Dublaj in your language? Translating the interface is a single JSON file — see CONTRIBUTING.md on GitHub.'), 'tip'))
         return card
+    def _make_update_card(self):
+        card = SectionCard(t('Update'))
+        ver_text = t('Version {version}', version=__version__)
+        self._lbl_update_ver = QLabel(ver_text)
+        self._lbl_update_ver.setStyleSheet(f'color: {TEXT}; font-size: 13px; font-weight: 700;')
+
+        self._chk_startup_update = QCheckBox(t('Check on startup'))
+        self._chk_startup_update.setMinimumHeight(48)
+        startup_checked = True
+        try:
+            from lingolay.core import guncelleme
+            startup_checked = bool(guncelleme.ayarlar().get('acilista_kontrol', True))
+        except Exception:
+            pass
+        self._chk_startup_update.setChecked(startup_checked)
+        self._chk_startup_update.toggled.connect(self._on_startup_update_toggled)
+
+        self._btn_check_update = QPushButton(t('Check for updates'))
+        self._btn_check_update.setObjectName('btn_sec')
+        self._btn_check_update.setMinimumHeight(48)
+        self._btn_check_update.clicked.connect(self._check_for_updates_manual)
+
+        self._lbl_update_status = QLabel('')
+        self._lbl_update_status.setStyleSheet(f'color: {TEXT2}; font-size: 12px;')
+        self._lbl_update_status.setWordWrap(True)
+
+        self._btn_update_now = QPushButton(t('Update now'))
+        self._btn_update_now.setMinimumHeight(48)
+        self._btn_update_now.setVisible(False)
+        self._btn_update_now.clicked.connect(self._on_update_now_clicked)
+
+        row_top = QHBoxLayout()
+        row_top.setSpacing(10)
+        row_top.addWidget(self._lbl_update_ver)
+        row_top.addStretch()
+        row_top.addWidget(self._btn_check_update)
+
+        card.add_row(row_top)
+        card.add_widget(self._chk_startup_update)
+        card.add_widget(self._lbl_update_status)
+        card.add_widget(self._btn_update_now)
+        return card
+
+    def _make_share_card(self):
+        card = SectionCard(t('Share'))
+        lbl_info = QLabel(t('Send Afu Dublaj to a friend'))
+        lbl_info.setStyleSheet(f'color: {TEXT}; font-size: 13px;')
+
+        btn_share = QPushButton(t('Send link'))
+        btn_share.setObjectName('btn_sec')
+        btn_share.setMinimumHeight(48)
+        btn_share.clicked.connect(self._copy_share_link)
+
+        row = QHBoxLayout()
+        row.setSpacing(10)
+        row.addWidget(lbl_info, 1)
+        row.addWidget(btn_share)
+        card.add_row(row)
+        return card
+
+    def _make_community_card(self):
+        if not SAYAC_URL:
+            return None
+        card = SectionCard(t('Community'))
+        self._lbl_community_count = QLabel(t('{count} people used it in the last 7 days', count='—'))
+        self._lbl_community_count.setStyleSheet(f'color: {TEXT}; font-size: 13px;')
+        btn_join = QPushButton(t('Join the counter'))
+        btn_join.setObjectName('btn_sec')
+        btn_join.setMinimumHeight(48)
+        btn_join.clicked.connect(self._join_community_counter)
+        row = QHBoxLayout()
+        row.setSpacing(10)
+        row.addWidget(self._lbl_community_count, 1)
+        row.addWidget(btn_join)
+        card.add_row(row)
+        return card
+
+    def _copy_share_link(self):
+        link = f'https://github.com/{UPDATE_REPO}/releases/latest'
+        clipboard = QGuiApplication.clipboard()
+        if clipboard:
+            clipboard.setText(link)
+        self._sb.showMessage(t('Link copied to clipboard.'), 4000)
+
+    def _join_community_counter(self):
+        if not SAYAC_URL:
+            return
+        def worker():
+            try:
+                import json
+                import urllib.request
+                import uuid
+                payload = json.dumps({'app': 'afulingo', 'id': str(uuid.uuid4()), 'v': __version__}).encode('utf-8')
+                req = urllib.request.Request(f'{SAYAC_URL}/ping', data=payload, headers={'Content-Type': 'application/json'})
+                urllib.request.urlopen(req, timeout=5)
+            except Exception as e:
+                logger.debug('[Community] ping failed: %s', e)
+        threading.Thread(target=worker, daemon=True).start()
+
+    def _on_startup_update_toggled(self, checked):
+        try:
+            from lingolay.core import guncelleme
+            guncelleme.ayar_yaz(acilista_kontrol=checked)
+        except Exception as e:
+            logger.debug('[Update] ayar_yaz error: %s', e)
+
+    def _start_background_update_check(self):
+        try:
+            from lingolay.core import guncelleme
+            ayarlar = guncelleme.ayarlar()
+            if not ayarlar.get('acilista_kontrol', True):
+                return
+            self._bg_checker = guncelleme.ArkaPlanKontrol(self._sig_update_found.emit)
+            self._bg_checker.baslat()
+        except ImportError:
+            logger.debug('[Update] core.guncelleme not available yet')
+        except Exception as e:
+            logger.warning('[Update] ArkaPlanKontrol start failed: %s', e)
+
+    def _on_update_found(self, bilgi):
+        if not isinstance(bilgi, dict):
+            return
+        self._pending_update = bilgi
+        target_ver = bilgi.get('surum') or bilgi.get('tag', '')
+        if hasattr(self, '_lbl_update_status'):
+            self._lbl_update_status.setText(t('New version ready: {version}', version=target_ver))
+            self._lbl_update_status.setStyleSheet(f'color: {GREEN}; font-size: 12px; font-weight: 700;')
+        if hasattr(self, '_btn_update_now'):
+            self._btn_update_now.setVisible(True)
+            self._btn_update_now.setEnabled(True)
+
+    def _check_for_updates_manual(self):
+        if self._update_worker and self._update_worker.is_alive():
+            return
+        self._lbl_update_status.setText(t('Checking…'))
+        self._lbl_update_status.setStyleSheet(f'color: {TEXT2}; font-size: 12px;')
+        self._btn_check_update.setEnabled(False)
+
+        def worker():
+            try:
+                from lingolay.core import guncelleme
+                res = guncelleme.kontrol_et()
+                self._sig_update_checked.emit(res)
+            except ImportError:
+                self._sig_update_check_failed.emit()
+            except Exception as e:
+                logger.warning('[Update] manual check error: %s', e)
+                self._sig_update_check_failed.emit()
+
+        self._update_worker = threading.Thread(target=worker, daemon=True)
+        self._update_worker.start()
+
+    def _on_manual_check_finished(self, res):
+        self._btn_check_update.setEnabled(True)
+        if res and isinstance(res, dict):
+            self._on_update_found(res)
+        else:
+            self._lbl_update_status.setText(t('Afu Dublaj is up to date.'))
+            self._lbl_update_status.setStyleSheet(f'color: {TEXT2}; font-size: 12px;')
+            self._btn_update_now.setVisible(False)
+
+    def _on_manual_check_error(self):
+        self._btn_check_update.setEnabled(True)
+        self._lbl_update_status.setText(t('Update could not be completed right now.'))
+        self._lbl_update_status.setStyleSheet(f'color: {RED}; font-size: 12px;')
+
+    def _on_update_now_clicked(self):
+        if not self._pending_update:
+            return
+        self._btn_update_now.setEnabled(False)
+        self._btn_update_now.setText(t('Downloading…'))
+
+        def worker():
+            try:
+                from lingolay.core import guncelleme
+                zip_path = guncelleme.indir(self._pending_update)
+                self._sig_update_downloaded.emit(zip_path)
+            except Exception as e:
+                logger.warning('[Update] download failed: %s', e)
+                self._sig_update_download_failed.emit()
+
+        threading.Thread(target=worker, daemon=True).start()
+
+    def _start_install_and_quit(self, zip_path):
+        try:
+            from lingolay.core import guncelleme
+            started = guncelleme.kurulum_baslat(zip_path, exe_adi='AfuDublaj.exe')
+            if started:
+                self._pending_update = None
+                self.close()
+                return
+        except Exception as e:
+            logger.warning('[Update] installer start failed: %s', e)
+        self._on_update_install_failed()
+
+    def _on_update_install_failed(self):
+        self._btn_update_now.setEnabled(True)
+        self._btn_update_now.setText(t('Update now'))
+        self._lbl_update_status.setText(t('Update could not be completed right now.'))
+        self._lbl_update_status.setStyleSheet(f'color: {RED}; font-size: 12px;')
+
+    def _is_active_translation(self):
+        try:
+            if hasattr(self, '_pipeline') and self._pipeline.status.is_running:
+                return True
+            if hasattr(self, '_screen_translator') and self._screen_translator.is_active:
+                return True
+        except Exception:
+            pass
+        return False
+
+    def _prompt_close_update(self):
+        if not self._pending_update or self._is_active_translation():
+            return False
+        target_ver = self._pending_update.get('surum') or self._pending_update.get('tag', '')
+        dlg = QDialog(self)
+        dlg.setWindowTitle(t('Recommended update'))
+        dlg.setModal(True)
+        dlg.setStyleSheet(f'QDialog {{ background: {BG}; }} QLabel {{ background: transparent; color: {TEXT}; }}')
+        lay = QVBoxLayout(dlg)
+        lay.setContentsMargins(24, 24, 24, 24)
+        lay.setSpacing(16)
+
+        msg = QLabel(t('Afu Dublaj {version} is ready. Update now?', version=target_ver))
+        msg.setWordWrap(True)
+        msg.setStyleSheet(f'color: {TEXT}; font-size: 14px; font-weight: 600;')
+        lay.addWidget(msg)
+
+        btn_row = QHBoxLayout()
+        btn_row.setSpacing(12)
+        btn_later = QPushButton(t('Later'))
+        btn_later.setObjectName('btn_sec')
+        btn_later.setMinimumHeight(48)
+        btn_later.clicked.connect(dlg.reject)
+
+        btn_now = QPushButton(t('Update now'))
+        btn_now.setMinimumHeight(48)
+        btn_now.clicked.connect(dlg.accept)
+
+        btn_row.addWidget(btn_later)
+        btn_row.addWidget(btn_now)
+        lay.addLayout(btn_row)
+
+        res = dlg.exec()
+        if res == QDialog.DialogCode.Accepted:
+            self._on_update_now_clicked()
+            return True
+        return False
 
     def _make_hotkeys_card(self):
         card = SectionCard(t('Keyboard shortcuts'))
@@ -1196,7 +1471,7 @@ class MainWindow(QMainWindow):
         src = self._combo_src.currentData()
         tgt = self._combo_tgt.currentData()
         if src == tgt:
-            QMessageBox.warning(self, __app_name__, t('Source and target language must be different.'))
+            QMessageBox.warning(self, APP_NAME, t('Source and target language must be different.'))
             return
         if src == s.source_lang and tgt == s.target_lang:
             self._sb.showMessage(t('Languages unchanged.'), 3000)
@@ -1221,7 +1496,7 @@ class MainWindow(QMainWindow):
         s = get_settings()
         s.ui_language = self._combo_ui_lang.currentData()
         save_settings()
-        QMessageBox.information(self, __app_name__, t('The interface language will change after restarting the app.'))
+        QMessageBox.information(self, APP_NAME, t('The interface language will change after restarting the app.'))
 
     # ── Dubbing ───────────────────────────────────────────────────────────
     def _apply_tts_settings(self):
@@ -1232,6 +1507,7 @@ class MainWindow(QMainWindow):
         tts.duck_enabled = self._chk_duck.isChecked()
         tts.duck_level = self._sld_duck.value()
         tts.smooth_flow = self._chk_smooth.isChecked()
+        tts.natural_voice = self._chk_natural.isChecked()
         tts.match_speaker = self._chk_match.isChecked()
         self._speaker_tile.set_checked(tts.match_speaker)
         target = get_settings().target_lang
@@ -1292,7 +1568,7 @@ class MainWindow(QMainWindow):
         voice = self._dubbing_voice(s.target_lang)
         if not voice:
             self._set_tts_checked(False)
-            QMessageBox.information(self, __app_name__, t('No dubbing voice is available for {lang} yet.', lang=get_language(s.target_lang).name))
+            QMessageBox.information(self, APP_NAME, t('No dubbing voice is available for {lang} yet.', lang=get_language(s.target_lang).name))
             return
         tts = s.tts
         if self._tts_engine is None or self._tts_engine.voice_key != voice:
@@ -1321,7 +1597,7 @@ class MainWindow(QMainWindow):
         self._update_speaker_matching()
 
     def _own_window_rects(self):
-        """Lingolay's visible windows (global logical coordinates), left out of Translate screen."""
+        """Afu Dublaj's visible windows (global logical coordinates), left out of Translate screen."""
         rects = []
         for widget in (self, self._overlay):
             if widget.isVisible():
@@ -1447,7 +1723,7 @@ class MainWindow(QMainWindow):
         self._overlay.set_click_through(self._chk_click_through.isChecked())
         self._overlay.update_appearance()
         if not self._overlay._current_text:
-            self._overlay.set_translation(t('Lingolay — overlay preview'))
+            self._overlay.set_translation(t('Afu Dublaj — overlay preview'))
         self._sb.showMessage(t('Overlay style updated.'), 3000)
 
     # ── Shortcuts ───────────────────────────────────────────────────────
@@ -1804,6 +2080,14 @@ class MainWindow(QMainWindow):
             QTimer.singleShot(100, self._overlay.show)
 
     def closeEvent(self, event):
+        if self._prompt_close_update():
+            event.ignore()
+            return
+        if self._bg_checker:
+            try:
+                self._bg_checker.durdur()
+            except Exception:
+                pass
         self._screen_translator.hide()
         self._tts_timer.stop()
         self._stop_speaker_matching()

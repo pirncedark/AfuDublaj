@@ -5,17 +5,17 @@ from PySide6.QtWidgets import QAbstractButton, QFrame, QHBoxLayout, QLabel, QVBo
 
 from lingolay.i18n import t
 
-VIOLET = '#a78bfa'
-VIOLET_BG = 'rgba(167,139,250,0.10)'
-VIOLET_BORDER = 'rgba(167,139,250,0.45)'
-FEMALE = '#f472b6'
-MALE = '#60a5fa'
+ACCENT = '#5B6CF8'
+VIOLET = '#7C3AED'
+VIOLET_BG = 'rgba(124,58,237,0.12)'
+VIOLET_BORDER = 'rgba(124,58,237,0.40)'
+FEMALE = '#F472B6'
+MALE = '#60A5FA'
 # chip fills: the accent at low opacity
-FILL = {FEMALE: (244, 114, 182, 38), MALE: (96, 165, 250, 38), '#8a8a92': (138, 138, 146, 30)}
-TEXT = '#ececef'
-TEXT2 = '#8a8a92'
-TRACK_OFF = '#3a3a42'
-
+FILL = {FEMALE: (244, 114, 182, 38), MALE: (96, 165, 250, 38), '#9CA3AF': (156, 163, 175, 30)}
+TEXT = '#E2E8F0'
+TEXT2 = '#9CA3AF'
+TRACK_OFF = '#1C2333'
 
 class ToggleSwitch(QAbstractButton):
     """An on/off switch with a sliding knob."""
@@ -59,7 +59,7 @@ class ToggleSwitch(QAbstractButton):
         p = QPainter(self)
         p.setRenderHint(QPainter.RenderHint.Antialiasing)
         r = QRectF(1, 1, self.width() - 2, self.height() - 2)
-        on, off = QColor(VIOLET), QColor(TRACK_OFF)
+        on, off = QColor(ACCENT), QColor(TRACK_OFF)
         track = QColor(
             int(off.red() + (on.red() - off.red()) * self._offset),
             int(off.green() + (on.green() - off.green()) * self._offset),
@@ -72,7 +72,7 @@ class ToggleSwitch(QAbstractButton):
         p.drawRoundedRect(r, r.height() / 2, r.height() / 2)
         d = r.height() - 6
         x = r.left() + 3 + (r.width() - d - 6) * self._offset
-        p.setBrush(QColor('#ffffff' if self.isEnabled() else '#9a9aa2'))
+        p.setBrush(QColor('#ffffff' if self.isEnabled() else '#6B7280'))
         p.drawEllipse(QRectF(x, r.top() + 3, d, d))
 
 
@@ -141,7 +141,7 @@ class SpeakerVoiceTile(QFrame):
         font.setBold(True)
         font.setLetterSpacing(font.SpacingType.AbsoluteSpacing, 0.6)
         self._badge.setFont(font)
-        self._badge.set_colors('#0d0d0f', VIOLET)
+        self._badge.set_colors('#0E1117', ACCENT)
         title_row.addWidget(self._badge, alignment=Qt.AlignmentFlag.AlignVCenter)
         title_row.addStretch()
         text.addLayout(title_row)

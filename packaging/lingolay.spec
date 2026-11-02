@@ -14,6 +14,7 @@ SRC = ROOT / 'src'
 datas = [
     (str(SRC / 'lingolay' / 'assets'), 'lingolay/assets'),
     (str(SRC / 'lingolay' / 'i18n' / 'locales'), 'lingolay/i18n/locales'),
+    (str(ROOT / 'LICENSE'), '.'),
 ]
 binaries = []
 hiddenimports = collect_submodules('lingolay')
@@ -51,9 +52,9 @@ exe = EXE(
     a.scripts,
     [],
     exclude_binaries=True,
-    name='Lingolay',
+    name='AfuDublaj',
     console=False,
     icon=str(SRC / 'lingolay' / 'assets' / 'icon.ico'),
     version=None,
 )
-coll = COLLECT(exe, a.binaries, a.datas, strip=False, upx=False, name='Lingolay')
+coll = COLLECT(exe, a.binaries, a.datas, strip=False, upx=False, name='AfuDublaj')

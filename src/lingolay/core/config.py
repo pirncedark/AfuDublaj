@@ -54,6 +54,7 @@ class TTSConfig:
     match_speaker: bool = False  # experimental: male/female voice from the game audio
     match_speaker_seen: bool = False  # hides the NEW badge once the feature was tried
     voices: dict = field(default_factory=dict)  # target language → chosen Piper voice id
+    natural_voice: bool = True  # online natural voices (edge-tts) first, Piper as the offline fallback
 
 
 def _default_hotkeys():

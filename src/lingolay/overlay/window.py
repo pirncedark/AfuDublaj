@@ -178,7 +178,7 @@ class OverlayWindow(QWidget):
         self._text_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self._text_label.setWordWrap(True)
         self._text_label.setMinimumHeight(1)
-        self._text_label.setText(t('Lingolay is ready...'))
+        self._text_label.setText(t('Afu Dublaj is ready...'))
         con_lay.addWidget(self._text_label)
         layout.addWidget(self._container)
         self._shadow = QGraphicsDropShadowEffect()

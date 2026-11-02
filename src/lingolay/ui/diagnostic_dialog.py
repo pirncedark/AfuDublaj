@@ -8,13 +8,56 @@ from PySide6.QtCore import QUrl
 from PySide6.QtGui import QDesktopServices, QFont, QGuiApplication
 from PySide6.QtWidgets import QDialog, QHBoxLayout, QLabel, QPushButton, QTextEdit, QVBoxLayout
 
-from lingolay import __app_name__, __version__
+from lingolay import APP_NAME, __app_name__, __version__
 from lingolay.i18n import t
 
 logger = logging.getLogger(__name__)
 
 ISSUES_URL = 'https://github.com/keremss7/lingolay/issues/new/choose'
 
+_STYLE = """
+QDialog {
+    background-color: #0E1117;
+    color: #E2E8F0;
+}
+QLabel {
+    color: #9CA3AF;
+    font-size: 13px;
+}
+QTextEdit {
+    background-color: #161B27;
+    border: 1px solid #1C2333;
+    border-radius: 6px;
+    color: #E2E8F0;
+    padding: 8px;
+}
+QPushButton {
+    background-color: #5B6CF8;
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 18px;
+    font-weight: 600;
+    font-size: 12px;
+}
+QPushButton:hover {
+    background-color: #4B5BE8;
+}
+QPushButton#btn_sec {
+    background-color: #1C2333;
+    color: #E2E8F0;
+    border: 1px solid #283347;
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-weight: 600;
+    font-size: 12px;
+}
+QPushButton#btn_sec:hover {
+    background-color: #242D40;
+    border-color: #5B6CF8;
+    color: #5B6CF8;
+}
+"""
 
 def _module_version(name):
     try:
@@ -29,7 +72,7 @@ def collect_diagnostics():
     Collect the whole system and app state as a single text block.
     Must never raise — every item is gathered independently.
     """
-    lines = [f'{__app_name__} — Diagnostics', '=' * 50]
+    lines = [f'{APP_NAME} — Diagnostics', '=' * 50]
     lines.append(f'App version    : {__version__}')
     lines.append(f'Python         : {sys.version.split()[0]}')
     lines.append(f'Platform       : {platform.platform()}')
@@ -92,6 +135,7 @@ class DiagnosticDialog(QDialog):
         super().__init__(parent)
         self.setWindowTitle(t('Diagnostics / Help'))
         self.resize(620, 520)
+        self.setStyleSheet(_STYLE)
         lay = QVBoxLayout(self)
         lay.setContentsMargins(20, 18, 20, 18)
         lay.setSpacing(10)

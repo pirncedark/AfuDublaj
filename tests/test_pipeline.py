@@ -21,9 +21,10 @@ def test_own_translation_is_detected(qapp):
 
 
 def test_main_window_builds(qapp):
+    from lingolay import APP_NAME
     from lingolay.ui.main_window import MainWindow
     w = MainWindow()
-    assert w.windowTitle() == 'Lingolay'
+    assert w.windowTitle() == APP_NAME
     w._hotkeys.stop()
     w._overlay.close()
     w._region_selector.close()

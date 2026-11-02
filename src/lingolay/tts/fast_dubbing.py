@@ -13,6 +13,7 @@ from lingolay.i18n import t
 
 from .audio_gain import boost_wav, concat_wavs
 from .ducking import AudioDucker
+from .edge_engine import EDGE_AVAILABLE, EdgeEngine, ses_sec
 from .piper_engine import DEFAULT_VOICE, PIPER_AVAILABLE, PIPER_IMPORT_ERROR, PiperEngine, model_is_downloaded
 from .voice_transform import change_gender
 
@@ -88,12 +89,12 @@ class TTSCache:
         self._max_size = max_size
         self._max_age = max_age_seconds
 
-    def _key(self, text: str, rate: str) -> str:
+    def _key(self, text: str, rate: str, voice: str | None = None) -> str:
         import hashlib
-        return hashlib.md5(f'{rate}:{text}'.encode()).hexdigest()
+        return hashlib.md5(f'{rate}|{voice or ""}:{text}'.encode()).hexdigest()
 
-    def get(self, text: str, rate: str) -> bytes | None:
-        k = self._key(text, rate)
+    def get(self, text: str, rate: str, voice: str | None = None) -> bytes | None:
+        k = self._key(text, rate, voice)
         entry = self._cache.get(k)
         if entry is None:
             return None
@@ -104,8 +105,8 @@ class TTSCache:
         self._cache.move_to_end(k)
         return data
 
-    def put(self, text: str, rate: str, data: bytes):
-        k = self._key(text, rate)
+    def put(self, text: str, rate: str, data: bytes, voice: str | None = None):
+        k = self._key(text, rate, voice)
         self._cache[k] = (time.time(), data)
         self._cache.move_to_end(k)
         while len(self._cache) > self._max_size:
@@ -122,6 +123,9 @@ class FastDubbingEngine:
         duck_enabled: bool = True,
         duck_level: float = 0.25,
         smooth: bool = True,
+        natural_voice: bool | None = None,
+        target_lang: str | None = None,
+        edge_engine: EdgeEngine | None = None,
     ):
         self._smooth = smooth
         self._last_spoken: str | None = None
@@ -137,6 +141,11 @@ class FastDubbingEngine:
         self._stop_event = threading.Event()
         self._interrupt_event = threading.Event()
         self._tts_playing_event = threading.Event()
+
+        self._natural_voice, self._target_lang = self._voice_settings(natural_voice, target_lang)
+        self._edge = edge_engine
+        if self._natural_voice and self._edge is None and EDGE_AVAILABLE:
+            self._edge = EdgeEngine()
 
         self._queue: Queue = Queue()
         self._play_queue: Queue = Queue()
@@ -166,8 +175,41 @@ class FastDubbingEngine:
         self._extra_pipers: dict[str, PiperEngine] = {}
         self._pending_timer: threading.Timer | None = None
 
+    @staticmethod
+    def _voice_settings(natural_voice: bool | None, target_lang: str | None):
+        """Fall back to the app settings when the caller does not pass them (main window may lag behind)."""
+        if natural_voice is not None and target_lang is not None:
+            return natural_voice, target_lang
+        try:
+            from lingolay.core.config import get_settings
+            settings = get_settings()
+            cfg_voice, cfg_lang = settings.tts.natural_voice, settings.target_lang
+        except Exception:
+            cfg_voice, cfg_lang = True, 'tr'
+        return (cfg_voice if natural_voice is None else natural_voice,
+                cfg_lang if target_lang is None else target_lang)
+
+    def _edge_active(self) -> bool:
+        return bool(self._natural_voice and self._edge is not None and ses_sec(self._target_lang, 'female'))
+
+    def _edge_voice_for(self, audio=None) -> str | None:
+        """Gender → Edge voice. Speaker matching still works; the pitch transform is Piper-only."""
+        gender = None
+        if self._matcher is not None:
+            try:
+                gender = self._matcher.decide(audio)
+            except Exception:
+                gender = None
+        return ses_sec(self._target_lang, gender or 'female')
+
+    @property
+    def natural_voice(self) -> bool:
+        return self._natural_voice
+
     @property
     def is_ready(self) -> bool:
+        if self._edge_active():
+            return PYGAME_AVAILABLE
         return PIPER_AVAILABLE and PYGAME_AVAILABLE and model_is_downloaded(self._voice_key)
 
     @property
@@ -176,6 +218,8 @@ class FastDubbingEngine:
 
     @property
     def voice_missing(self) -> bool:
+        if self._edge_active():
+            return False
         return not model_is_downloaded(self._voice_key)
 
     @property
@@ -184,6 +228,8 @@ class FastDubbingEngine:
 
     @property
     def init_error(self) -> str | None:
+        if self._edge_active() and PYGAME_AVAILABLE:
+            return None
         if not PIPER_AVAILABLE:
             return t('piper-tts is not installed ({error}). Install it with: pip install piper-tts', error=PIPER_IMPORT_ERROR)
         if not PYGAME_AVAILABLE:
@@ -264,7 +310,7 @@ class FastDubbingEngine:
             name='TTSWorker',
         )
         self._worker_thread.start()
-        logger.info('[TTS] Dubbing enabled — Piper %s (local)', self._voice_key)
+        logger.info('[TTS] Dubbing enabled — %s', f'Edge {self._target_lang} (natural), Piper fallback' if self._edge_active() else f'Piper {self._voice_key} (local)')
         return True
 
     def disable(self):
@@ -442,35 +488,65 @@ class FastDubbingEngine:
                 self._push_playback(data)
                 continue
             voice_key, speaker, transform = self._choose_voice(data) if item_type == '__MATCH__' else (None, None, None)
-            piper = self._get_piper(voice_key)
-            if piper is None or not piper.is_ready:
-                logger.warning('[TTS] Piper not ready: %s', piper.init_error if piper else '?')
-                continue
             rate, pause_ms = self._speech_rate, 0
             if self._smooth:
                 backlog = int(self._tts_playing_event.is_set()) + self._play_queue.qsize()
                 rate, pause_ms = catch_up_rate(rate, backlog), _SENTENCE_PAUSE_MS
-            cache_tag = rate if voice_key is None else f'{rate}|{voice_key}|{speaker}|{transform}'
-            parts = []
-            for seg in self._split_into_segments(text):
-                if self._stop_event.is_set() or self._interrupt_event.is_set():
-                    break
-                cached = self._cache.get(seg, cache_tag)
+            audio = self._synthesize_text(text, voice_key, speaker, transform, rate, pause_ms, data)
+            if audio:
+                self._push_playback(audio)
+
+    def _synthesize_text(self, text: str, voice_key, speaker, transform, rate: str, pause_ms: int, audio=None) -> bytes:
+        """Edge first (natural voice), Piper for the same line when Edge is unavailable."""
+        if self._edge_active():
+            edge_voice = self._edge_voice_for(audio)
+            if edge_voice:
+                cached = self._cache.get(text, rate, edge_voice)
                 if cached:
-                    parts.append(cached)
-                    continue
-                audio, err = piper.synthesize(seg, rate=rate, speaker_id=speaker, sentence_pause_ms=pause_ms)
-                if err:
-                    logger.warning('[TTS] Synthesis error: %s', err)
-                    continue
-                if not audio:
-                    continue
-                if transform:
-                    audio = change_gender(audio, transform)
-                self._cache.put(seg, cache_tag, audio)
-                parts.append(audio)
-            if parts:
-                self._push_playback(concat_wavs(parts, gap_ms=pause_ms))
+                    return cached
+                wav = self._synth_edge(text, edge_voice, rate)
+                if wav:
+                    self._cache.put(text, rate, wav, edge_voice)
+                    return wav
+                logger.warning('[TTS] Edge voice failed; falling back to Piper for this line')
+        return self._synthesize_piper(text, voice_key, speaker, transform, rate, pause_ms)
+
+    def _synth_edge(self, text: str, voice: str, rate: str) -> bytes:
+        try:
+            data, err = self._edge.synthesize(text, voice, rate)
+        except Exception as e:
+            logger.warning('[TTS] Edge synthesis error: %s', e)
+            return b''
+        if err or not data:
+            logger.warning('[TTS] Edge synthesis failed: %s', err or 'no audio')
+            return b''
+        return data
+
+    def _synthesize_piper(self, text: str, voice_key, speaker, transform, rate: str, pause_ms: int) -> bytes:
+        piper = self._get_piper(voice_key)
+        if piper is None or not piper.is_ready:
+            logger.warning('[TTS] Piper not ready: %s', piper.init_error if piper else '?')
+            return b''
+        cache_tag = rate if voice_key is None else f'{rate}|{voice_key}|{speaker}|{transform}'
+        parts = []
+        for seg in self._split_into_segments(text):
+            if self._stop_event.is_set() or self._interrupt_event.is_set():
+                break
+            cached = self._cache.get(seg, cache_tag)
+            if cached:
+                parts.append(cached)
+                continue
+            audio, err = piper.synthesize(seg, rate=rate, speaker_id=speaker, sentence_pause_ms=pause_ms)
+            if err:
+                logger.warning('[TTS] Synthesis error: %s', err)
+                continue
+            if not audio:
+                continue
+            if transform:
+                audio = change_gender(audio, transform)
+            self._cache.put(seg, cache_tag, audio)
+            parts.append(audio)
+        return concat_wavs(parts, gap_ms=pause_ms) if parts else b''
 
     def _push_playback(self, audio: bytes):
         if not audio:

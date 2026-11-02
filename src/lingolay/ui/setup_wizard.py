@@ -25,19 +25,19 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from lingolay import __app_name__
+from lingolay import APP_NAME, __app_name__
 from lingolay.i18n import t
 
 logger = logging.getLogger(__name__)
 
 _STYLE = """
 QWidget {
-    background-color: #0d0d0f;
-    color: #e8e8f0;
+    background-color: #0E1117;
+    color: #E2E8F0;
     font-size: 13px;
 }
 QPushButton {
-    background-color: #ff6929;
+    background-color: #5B6CF8;
     color: white;
     border: none;
     border-radius: 6px;
@@ -45,50 +45,50 @@ QPushButton {
     font-weight: bold;
     font-size: 13px;
 }
-QPushButton:hover  { background-color: #ff8050; }
+QPushButton:hover  { background-color: #4B5BE8; }
 QPushButton:disabled {
-    background-color: rgba(255, 105, 41, 0.25);
+    background-color: rgba(91, 108, 248, 0.25);
     color: rgba(255, 255, 255, 0.3);
 }
 QPushButton#secondary {
     background-color: transparent;
-    border: 1px solid rgba(255, 105, 41, 0.4);
-    color: rgba(255, 180, 130, 0.8);
+    border: 1px solid rgba(91, 108, 248, 0.4);
+    color: #9CA3AF;
     padding: 8px 18px;
 }
-QPushButton#secondary:hover { background-color: rgba(255, 105, 41, 0.12); }
+QPushButton#secondary:hover { background-color: rgba(91, 108, 248, 0.12); color: #E2E8F0; }
 QProgressBar {
-    border: 1px solid #333340;
+    border: 1px solid #1C2333;
     border-radius: 5px;
-    background: #1a1a1f;
+    background: #161B27;
     text-align: center;
     color: white;
     height: 20px;
 }
 QProgressBar::chunk {
-    background: qlineargradient(x1:0,y1:0,x2:1,y2:0,stop:0 #ff6929,stop:1 #30cc74);
+    background: qlineargradient(x1:0,y1:0,x2:1,y2:0,stop:0 #5B6CF8,stop:1 #10B981);
     border-radius: 4px;
 }
 QTextEdit {
-    background: #111115;
-    border: 1px solid #2a2a35;
+    background: #161B27;
+    border: 1px solid #1C2333;
     border-radius: 6px;
-    color: #8ad68a;
+    color: #10B981;
     font-family: 'Consolas', 'Menlo', monospace;
     font-size: 11px;
     padding: 6px;
 }
 QRadioButton, QCheckBox {
-    color: #c8c8d8;
+    color: #E2E8F0;
     font-size: 13px;
     spacing: 10px;
     padding: 8px;
 }
 QRadioButton::indicator { width: 16px; height: 16px; }
-QRadioButton::indicator:checked { background: #ff6929; border-radius: 8px; }
+QRadioButton::indicator:checked { background: #5B6CF8; border-radius: 8px; }
 QRadioButton::indicator:unchecked {
-    background: #1a1a1f;
-    border: 2px solid #555560;
+    background: #161B27;
+    border: 2px solid #6B7280;
     border-radius: 8px;
 }
 """
@@ -105,7 +105,7 @@ def _label(text, style=None):
 def _divider():
     line = QWidget()
     line.setFixedHeight(1)
-    line.setStyleSheet('background: #222230;')
+    line.setStyleSheet('background: #1C2333;')
     return line
 
 
@@ -181,9 +181,9 @@ class ModelSelectScreen(QWidget):
         lay = QVBoxLayout(self)
         lay.setContentsMargins(0, 0, 0, 0)
         lay.setSpacing(10)
-        lay.addWidget(_label(t('Choose a translation model'), 'font-size:20px; font-weight:bold; color:#ff6929;'))
+        lay.addWidget(_label(t('Choose a translation model'), 'font-size:20px; font-weight:bold; color:#5B6CF8;'))
         lay.addWidget(_label(t('Download the model once — after that everything runs fully offline. '
-                               'Models are downloaded directly from their source on Hugging Face.'), 'color:#a0a0b8;'))
+                               'Models are downloaded directly from their source on Hugging Face.'), 'color:#9CA3AF;'))
         lay.addWidget(_divider())
         self._radios = {}
         for model_id, info in MODELS.items():
@@ -200,7 +200,7 @@ class ModelSelectScreen(QWidget):
                                       size=_format_size(voice.approx_size_mb)))
             lay.addWidget(self._chk_voice)
         lay.addWidget(_label(t('NLLB-200 models are published by Meta AI under the CC-BY-NC-4.0 license '
-                               '(non-commercial use).'), 'color:#555568; font-size:11px;'))
+                               '(non-commercial use).'), 'color:#6B7280; font-size:11px;'))
         lay.addStretch()
         row = QHBoxLayout()
         btn_skip = QPushButton(t('Skip (I will use DeepL)'))
@@ -232,9 +232,9 @@ class DownloadScreen(QWidget):
         lay = QVBoxLayout(self)
         lay.setContentsMargins(0, 0, 0, 0)
         lay.setSpacing(12)
-        self._title = _label(t('Downloading model...'), 'font-size:20px; font-weight:bold; color:#ff6929;')
+        self._title = _label(t('Downloading model...'), 'font-size:20px; font-weight:bold; color:#5B6CF8;')
         lay.addWidget(self._title)
-        self._sub = _label(t('Please wait. Do not disconnect from the internet.'), 'color:#a0a0b8;')
+        self._sub = _label(t('Please wait. Do not disconnect from the internet.'), 'color:#9CA3AF;')
         lay.addWidget(self._sub)
         lay.addWidget(_divider())
         lay.addSpacing(8)
@@ -242,7 +242,7 @@ class DownloadScreen(QWidget):
         self._progress.setRange(0, 100)
         self._progress.setValue(0)
         lay.addWidget(self._progress)
-        self._speed_lbl = _label('', 'color:#a0a0b8; font-size:12px; font-weight:600;')
+        self._speed_lbl = _label('', 'color:#9CA3AF; font-size:12px; font-weight:600;')
         lay.addWidget(self._speed_lbl)
         self._log = QTextEdit()
         self._log.setReadOnly(True)
@@ -264,7 +264,7 @@ class DownloadScreen(QWidget):
         self._btn_cancel.setEnabled(True)
         self._title.setText(t('Downloading model...'))
         self._sub.setText(t('Please wait. Do not disconnect from the internet.'))
-        self._sub.setStyleSheet('color:#a0a0b8;')
+        self._sub.setStyleSheet('color:#9CA3AF;')
         self._dl_start_time = time.monotonic()
         self._last_ui_update = 0.0
         self._worker = DownloadWorker(model_ids)
@@ -311,7 +311,7 @@ class DownloadScreen(QWidget):
         else:
             self._title.setText(t('An error occurred'))
             self._sub.setText(msg.split('\n')[0] if msg else t('Unknown error'))
-            self._sub.setStyleSheet('color:#f04040;')
+            self._sub.setStyleSheet('color:#EF4444;')
         self.download_done.emit(success, msg)
 
     def _on_cancel(self):
@@ -329,13 +329,13 @@ class ReadyScreen(QWidget):
         lay.setContentsMargins(0, 0, 0, 0)
         lay.setSpacing(16)
         lay.addStretch()
-        tick = _label('✓', 'font-size:56px; color:#30cc74;')
+        tick = _label('✓', 'font-size:56px; color:#10B981;')
         tick.setAlignment(Qt.AlignmentFlag.AlignCenter)
         lay.addWidget(tick)
-        ready_lbl = _label(t('Ready!'), 'font-size:22px; font-weight:bold; color:#e8e8f0;')
+        ready_lbl = _label(t('Ready!'), 'font-size:22px; font-weight:bold; color:#E2E8F0;')
         ready_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
         lay.addWidget(ready_lbl)
-        sub = _label(t('Setup is complete. You can start the app.'), 'color:#a0a0b8;')
+        sub = _label(t('Setup is complete. You can start the app.'), 'color:#9CA3AF;')
         sub.setAlignment(Qt.AlignmentFlag.AlignCenter)
         lay.addWidget(sub)
         lay.addStretch()
@@ -369,14 +369,14 @@ class SetupWizard(QDialog):
         self._stack.setCurrentIndex(self.SCREEN_MODEL)
 
     def _setup_ui(self):
-        self.setWindowTitle(f"{__app_name__} — {t('Setup')}")
+        self.setWindowTitle(f"{APP_NAME} — {t('Setup')}")
         self.setFixedSize(560, 560)
         self.setStyleSheet(_STYLE)
         outer = QVBoxLayout(self)
         outer.setContentsMargins(36, 32, 36, 32)
         outer.setSpacing(0)
         brand_row = QHBoxLayout()
-        brand_row.addWidget(_label(__app_name__, 'font-size:16px; font-weight:bold; color:#ff6929;'))
+        brand_row.addWidget(_label(APP_NAME, 'font-size:16px; font-weight:bold; color:#5B6CF8;'))
         brand_row.addStretch()
         outer.addLayout(brand_row)
         outer.addSpacing(24)
