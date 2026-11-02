@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="src/lingolay/assets/icon.png" width="112" alt="Afu Dublaj logo">
+<img src="src/afudublaj/assets/icon.png" width="112" alt="Afu Dublaj logo">
 
 # Afu Dublaj
 

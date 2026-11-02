@@ -1,8 +1,8 @@
 import io
 import wave
 
-from lingolay.tts.audio_gain import concat_wavs
-from lingolay.tts.fast_dubbing import FastDubbingEngine, catch_up_rate, unspoken_part
+from afudublaj.tts.audio_gain import concat_wavs
+from afudublaj.tts.fast_dubbing import FastDubbingEngine, catch_up_rate, unspoken_part
 
 
 def _wav(frames, rate=22050):
@@ -84,7 +84,7 @@ def test_japanese_works_without_the_sudachi_dictionary(monkeypatch):
 
     import pytest
     pyopenjtalk = pytest.importorskip('pyopenjtalk')
-    from lingolay.tts.piper_engine import use_openjtalk_dictionary_only
+    from afudublaj.tts.piper_engine import use_openjtalk_dictionary_only
     monkeypatch.setitem(sys.modules, 'sudachidict_core', None)  # as in the Windows build
     monkeypatch.setattr(pyopenjtalk, 'run_frontend', pyopenjtalk.run_frontend)
     use_openjtalk_dictionary_only()
@@ -105,7 +105,7 @@ class _FakeMatcher:
 
 
 def _gender_voices():
-    from lingolay.models.manifest import GenderVoice
+    from afudublaj.models.manifest import GenderVoice
     return {'female': GenderVoice('xx_F-voice', speaker=1), 'male': GenderVoice('xx_M-voice', transform='male')}
 
 

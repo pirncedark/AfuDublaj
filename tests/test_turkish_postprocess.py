@@ -1,4 +1,4 @@
-from lingolay.text.turkish_postprocess import (
+from afudublaj.text.turkish_postprocess import (
     apply_sfx_map,
     fix_sentence_capitalization,
     normalize_punctuation,

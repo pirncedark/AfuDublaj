@@ -2,8 +2,8 @@
 from PySide6.QtCore import QPointF, Qt
 from PySide6.QtGui import QMouseEvent
 
-from lingolay.core.config import get_settings
-from lingolay.overlay.window import OverlayWindow
+from afudublaj.core.config import get_settings
+from afudublaj.overlay.window import OverlayWindow
 
 UZUN = 'Bu biraz daha uzun bir çeviri cümlesi, iki satıra taşabilir mi bakalım.'
 KISA = 'Kısa.'

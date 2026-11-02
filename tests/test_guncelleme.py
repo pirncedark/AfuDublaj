@@ -7,8 +7,8 @@ import zipfile
 
 import pytest
 
-from lingolay.core import guncelleme
-from lingolay.core.guncelleme import (
+from afudublaj.core import guncelleme
+from afudublaj.core.guncelleme import (
     ArkaPlanKontrol,
     GuncellemeHatasi,
     daha_yeni_mi,

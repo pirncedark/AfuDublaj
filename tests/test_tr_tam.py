@@ -1,7 +1,7 @@
 """Test completeness and validity of Turkish (tr.json), German (de.json) and Russian (ru.json) locales.
 
 Verifies:
-1. Every static t('...') call in src/lingolay/**/*.py exists in tr.json, de.json, and ru.json.
+1. Every static t('...') call in src/afudublaj/**/*.py exists in tr.json, de.json, and ru.json.
 2. Every key in tr.json has a non-empty translation.
 3. Every translation in tr.json is different from its key, unless the key is a recognized
    proper noun, brand, or technical acronym (WHITELIST_SAME).
@@ -12,10 +12,10 @@ import json
 from pathlib import Path
 import pytest
 
-from lingolay.i18n import LOCALES_DIR
+from afudublaj.i18n import LOCALES_DIR
 
 ROOT = Path(__file__).resolve().parents[1]
-SRC = ROOT / 'src' / 'lingolay'
+SRC = ROOT / 'src' / 'afudublaj'
 
 # Technical acronyms, brand names or untranslated UI constants allowed to match their key in tr.json
 WHITELIST_SAME = {
@@ -29,7 +29,7 @@ WHITELIST_SAME = {
 
 
 def collect_source_t_strings() -> dict[str, list[str]]:
-    """Extract all static string literals passed to t('...') across src/lingolay."""
+    """Extract all static string literals passed to t('...') across src/afudublaj."""
     found: dict[str, list[str]] = {}
     for path in sorted(SRC.rglob('*.py')):
         try:
@@ -52,7 +52,7 @@ def collect_source_t_strings() -> dict[str, list[str]]:
 
 
 def test_tr_has_all_source_strings():
-    """Every static t('...') string in src/lingolay must exist in tr.json."""
+    """Every static t('...') string in src/afudublaj must exist in tr.json."""
     tr_path = LOCALES_DIR / 'tr.json'
     assert tr_path.exists(), "tr.json does not exist"
     tr_data = json.loads(tr_path.read_text(encoding='utf-8'))
@@ -68,7 +68,7 @@ def test_tr_has_all_source_strings():
 
 
 def test_de_and_ru_have_all_source_strings():
-    """Every static t('...') string in src/lingolay must exist in de.json and ru.json."""
+    """Every static t('...') string in src/afudublaj must exist in de.json and ru.json."""
     source_strings = collect_source_t_strings()
 
     for loc in ('de', 'ru'):

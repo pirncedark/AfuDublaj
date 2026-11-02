@@ -9,7 +9,7 @@ from PySide6.QtCore import QRectF, Qt
 from PySide6.QtGui import QColor, QFont, QGuiApplication, QImage, QLinearGradient, QPainter, QPainterPath, QPen
 
 ROOT = Path(__file__).resolve().parents[1]
-OUT = ROOT / 'src' / 'lingolay' / 'assets'
+OUT = ROOT / 'src' / 'afudublaj' / 'assets'
 
 
 def render(size):

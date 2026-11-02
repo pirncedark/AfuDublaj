@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="../src/lingolay/assets/icon.png" width="112" alt="Lingolay logosu">
+<img src="../src/afudublaj/assets/icon.png" width="112" alt="Lingolay logosu">
 
 # Lingolay
 
@@ -48,17 +48,17 @@ Lingolay ekrandaki altyazıyı okur, Meta'nın NLLB‑200 yapay zekâ modeliyle 
 
 ```bash
 git clone https://github.com/keremss7/lingolay.git
-cd lingolay
+cd AfuDublaj
 python -m venv .venv && .venv\Scripts\activate
 pip install -e ".[all]"
-lingolay
+afudublaj
 ```
 
 **Modelleri komut satırından indir:**
 
 ```bash
-lingolay --list-models
-lingolay --download fast voice:tr     # çeviri modeli + Türkçe dublaj sesi
+afudublaj --list-models
+afudublaj --download fast voice:tr     # çeviri modeli + Türkçe dublaj sesi
 ```
 
 ## 🎯 İpuçları

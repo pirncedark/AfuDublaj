@@ -9,7 +9,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-SRC = ROOT / 'src' / 'lingolay'
+SRC = ROOT / 'src' / 'afudublaj'
 LOCALES = SRC / 'i18n' / 'locales'
 # Constants translated at display time (not literal t() calls)
 EXTRA_MODULES = {
@@ -34,7 +34,7 @@ def collect():
                             found.setdefault(v.value, rel)
     # model display names / descriptions
     sys.path.insert(0, str(ROOT / 'src'))
-    from lingolay.models.manifest import MODELS, VOICES
+    from afudublaj.models.manifest import MODELS, VOICES
     for info in MODELS.values():
         found.setdefault(info.display_name, 'models/manifest.py')
         found.setdefault(info.description, 'models/manifest.py')

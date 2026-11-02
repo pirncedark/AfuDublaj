@@ -21,7 +21,7 @@ jobs:
       - run: python -m pip install --upgrade pip
       - run: pip install ".[all]" pyinstaller
       - name: Build
-        run: pyinstaller packaging/lingolay.spec --noconfirm --clean
+        run: pyinstaller packaging/afudublaj.spec --noconfirm --clean
       - name: Smoke test
         shell: pwsh
         run: |

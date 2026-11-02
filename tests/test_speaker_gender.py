@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from lingolay.tts import speaker_gender as sg
+from afudublaj.tts import speaker_gender as sg
 
 
 def test_log_mel_shape_and_normalization():

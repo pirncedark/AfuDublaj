@@ -2,9 +2,9 @@ import json
 import re
 import string
 
-from lingolay.i18n import LOCALES_DIR
-from lingolay.languages import LANGUAGES, display_name, get_language
-from lingolay.models.manifest import AUX_MODELS, GENDER_VOICES, MODELS, VOICE_TABLE, VOICES, get_model, voice_for_language
+from afudublaj.i18n import LOCALES_DIR
+from afudublaj.languages import LANGUAGES, display_name, get_language
+from afudublaj.models.manifest import AUX_MODELS, GENDER_VOICES, MODELS, VOICE_TABLE, VOICES, get_model, voice_for_language
 
 
 def test_every_language_has_codes():
@@ -54,7 +54,7 @@ def test_locale_files_are_valid_and_keep_placeholders():
 
 
 def test_system_locale_matches_regional_locale_files(monkeypatch):
-    import lingolay.i18n as i18n
+    import afudublaj.i18n as i18n
     langs = {'en': 'English', 'tr': 'Türkçe', 'pt-BR': 'Português (Brasil)'}
     monkeypatch.setattr(i18n, 'available_languages', lambda: langs)
     assert i18n.match_language('pt_BR') == 'pt-BR'
@@ -80,7 +80,7 @@ def test_aux_model_downloads_from_a_pinned_release():
 
 
 def test_voice_choices_per_language():
-    from lingolay.models.manifest import VOICE_GENDERS, voices_for_language
+    from afudublaj.models.manifest import VOICE_GENDERS, voices_for_language
     assert voices_for_language('hi') == ['hi_IN-pratham-medium', 'hi_IN-priyamvada-medium', 'hi_IN-rohan-medium']
     assert voices_for_language('tr') == ['tr_TR-dfki-medium']
     assert voices_for_language('xx') == []

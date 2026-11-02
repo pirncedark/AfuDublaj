@@ -4,9 +4,9 @@ import sys
 import numpy as np
 import pytest
 
-from lingolay.ocr.base import OcrLine
-from lingolay.screen_translate.layout import font_size_of, group_blocks
-from lingolay.screen_translate.style import analyze
+from afudublaj.ocr.base import OcrLine
+from afudublaj.screen_translate.layout import font_size_of, group_blocks
+from afudublaj.screen_translate.style import analyze
 
 MENU = ['Inventory', 'Quest Log', 'Settings', 'Save Game', 'Exit to Main Menu']
 EXPECTED = MENU + ['Continue', 'An ancient sword forged by the elves.', 'Objective: Find the lost village']
@@ -93,8 +93,8 @@ def test_textured_background_is_inpainted_not_painted_over(qapp):
 
 
 def test_rendering_draws_the_translation_over_the_original(qapp):
-    from lingolay.screen_translate.controller import build_items
-    from lingolay.screen_translate.render import render_onto
+    from afudublaj.screen_translate.controller import build_items
+    from afudublaj.screen_translate.render import render_onto
     frame = _scene(qapp)
     lines = [OcrLine('Settings', 100, 340, 120, 32)]
     items = build_items(frame, lines, lambda s: 'Ayarlar')
@@ -106,14 +106,14 @@ def test_rendering_draws_the_translation_over_the_original(qapp):
 
 @pytest.mark.skipif(sys.platform != 'win32', reason='Windows OCR')
 def test_windows_ocr_finds_the_game_texts(qapp):
-    from lingolay.ocr.windows_ocr import WindowsOCR
+    from afudublaj.ocr.windows_ocr import WindowsOCR
     ocr = WindowsOCR('en-US')
     if not ocr.is_available():
         pytest.skip('Windows OCR unavailable')
     frame = _scene(qapp)
     import warnings
 
-    from lingolay.ocr.windows_ocr import _run_async_in_loop
+    from afudublaj.ocr.windows_ocr import _run_async_in_loop
     try:
         raw = _run_async_in_loop(ocr._recognize_raw(frame))
         diag = f'raw lines={len(raw.lines)}'
@@ -125,7 +125,7 @@ def test_windows_ocr_finds_the_game_texts(qapp):
     warnings.warn(f'plain text: {ocr.recognize(frame)[:120]!r}; {diag}', stacklevel=1)
     import time
 
-    from lingolay.screen_translate.controller import find_lines
+    from afudublaj.screen_translate.controller import find_lines
     start = time.perf_counter()
     blocks = group_blocks(find_lines(ocr, frame))
     elapsed = (time.perf_counter() - start) * 1000
@@ -140,7 +140,7 @@ def test_windows_ocr_finds_the_game_texts(qapp):
 def test_hotkey_flow_shows_and_hides_the_translation(qapp, qtbot, monkeypatch):
     from PySide6.QtGui import QGuiApplication
 
-    from lingolay.screen_translate.controller import ScreenTranslator
+    from afudublaj.screen_translate.controller import ScreenTranslator
     frame = _scene()
 
     class FakeOCR:

@@ -1,5 +1,5 @@
 def test_extract_new_sentences_skips_already_translated(qapp):
-    from lingolay.core.pipeline import Pipeline
+    from afudublaj.core.pipeline import Pipeline
     p = Pipeline(qapp)
     assert p._extract_new_sentences('Hello there. How are you?') == 'Hello there. How are you?'
     # scrolling subtitle: first line already translated, only the new one is returned
@@ -13,7 +13,7 @@ def test_extract_new_sentences_skips_already_translated(qapp):
 def test_own_translation_is_detected(qapp):
     import time
 
-    from lingolay.core.pipeline import Pipeline
+    from afudublaj.core.pipeline import Pipeline
     p = Pipeline(qapp)
     p._recent_translations.append((p._flatten('Beni takip edin, köprü çökmek üzere!'), time.time()))
     assert p._is_own_translation('Beni takip edin, kopru çökmek üzere!')
@@ -21,8 +21,8 @@ def test_own_translation_is_detected(qapp):
 
 
 def test_main_window_builds(qapp):
-    from lingolay import APP_NAME
-    from lingolay.ui.main_window import MainWindow
+    from afudublaj import APP_NAME
+    from afudublaj.ui.main_window import MainWindow
     w = MainWindow()
     assert w.windowTitle() == APP_NAME
     w._hotkeys.stop()
@@ -34,7 +34,7 @@ def test_main_window_builds(qapp):
 
 def test_grown_typewriter_subtitle_is_translated_again(qapp):
     # Issue #12: the half-typed line was translated, the finished line was then taken for a duplicate
-    from lingolay.core.pipeline import Pipeline
+    from afudublaj.core.pipeline import Pipeline
     p = Pipeline(qapp)
     full = ('But he never expected that his desperate gamble would directly cause her authority '
             'to spiral out of control, triggering the Great Shadow Calamity...')
@@ -45,7 +45,7 @@ def test_grown_typewriter_subtitle_is_translated_again(qapp):
 
 
 def test_ocr_jitter_is_still_a_duplicate(qapp):
-    from lingolay.core.pipeline import Pipeline
+    from afudublaj.core.pipeline import Pipeline
     p = Pipeline(qapp)
     assert p._extract_new_sentences('So this is sea otter meat.')
     assert p._extract_new_sentences('So this islsa otter meat.') == ''
@@ -53,9 +53,9 @@ def test_ocr_jitter_is_still_a_duplicate(qapp):
 
 
 def test_speaker_tile_turns_the_feature_and_dubbing_on(qapp, monkeypatch):
-    from lingolay.core.config import get_settings
-    from lingolay.tts import game_audio
-    from lingolay.ui import main_window as mw
+    from afudublaj.core.config import get_settings
+    from afudublaj.tts import game_audio
+    from afudublaj.ui import main_window as mw
     monkeypatch.setattr(game_audio, 'is_supported', lambda: True)
     started = []
     monkeypatch.setattr(mw.MainWindow, '_on_tts_toggle', lambda self, checked: started.append(checked))
@@ -79,8 +79,8 @@ def test_speaker_tile_turns_the_feature_and_dubbing_on(qapp, monkeypatch):
 
 
 def test_voice_picker_lists_the_target_language_voices_and_saves_the_choice(qapp, monkeypatch):
-    from lingolay.core.config import get_settings
-    from lingolay.ui import main_window as mw
+    from afudublaj.core.config import get_settings
+    from afudublaj.ui import main_window as mw
     s = get_settings()
     monkeypatch.setattr(s, 'target_lang', 'hi')
     monkeypatch.setattr(s.tts, 'voices', {})
@@ -104,7 +104,7 @@ def test_voice_picker_lists_the_target_language_voices_and_saves_the_choice(qapp
 def test_black_capture_warns_once(qapp, monkeypatch):
     import numpy as np
 
-    from lingolay.core import pipeline as pl
+    from afudublaj.core import pipeline as pl
     p = pl.Pipeline(qapp)
     now = [100.0]
     monkeypatch.setattr(pl.time, 'monotonic', lambda: now[0])
@@ -138,8 +138,8 @@ class _DummyOCR:
 def _setup_pipeline_for_test(p, ocr_text='', monkeypatch=None, now_box=None):
     import numpy as np
 
-    from lingolay.capture.screen import CaptureFrame
-    from lingolay.core import pipeline as pl
+    from afudublaj.capture.screen import CaptureFrame
+    from afudublaj.core import pipeline as pl
     p._ocr = _DummyOCR(ocr_text)
     p._status.is_running = True
     if monkeypatch and now_box:
@@ -156,7 +156,7 @@ def _setup_pipeline_for_test(p, ocr_text='', monkeypatch=None, now_box=None):
 
 
 def test_subtitle_cleared_after_400ms_blank_frames(qapp, monkeypatch):
-    from lingolay.core.pipeline import Pipeline
+    from afudublaj.core.pipeline import Pipeline
     now = [1000.0]
     p = Pipeline(qapp)
     send = _setup_pipeline_for_test(p, 'Hello world', monkeypatch, now)
@@ -187,7 +187,7 @@ def test_subtitle_cleared_after_400ms_blank_frames(qapp, monkeypatch):
 
 
 def test_single_blank_frame_then_text_no_signal(qapp, monkeypatch):
-    from lingolay.core.pipeline import Pipeline
+    from afudublaj.core.pipeline import Pipeline
     now = [1000.0]
     p = Pipeline(qapp)
     send = _setup_pipeline_for_test(p, 'First subtitle', monkeypatch, now)
@@ -216,7 +216,7 @@ def test_single_blank_frame_then_text_no_signal(qapp, monkeypatch):
 
 
 def test_static_frame_diff_screen_with_text_for_2s_no_signal(qapp, monkeypatch):
-    from lingolay.core.pipeline import Pipeline
+    from afudublaj.core.pipeline import Pipeline
     now = [1000.0]
     p = Pipeline(qapp)
     send = _setup_pipeline_for_test(p, 'Static subtitle', monkeypatch, now)
@@ -238,7 +238,7 @@ def test_static_frame_diff_screen_with_text_for_2s_no_signal(qapp, monkeypatch):
 
 
 def test_static_empty_screen_clears_after_timeout(qapp, monkeypatch):
-    from lingolay.core.pipeline import Pipeline
+    from afudublaj.core.pipeline import Pipeline
     now = [1000.0]
     p = Pipeline(qapp)
     send = _setup_pipeline_for_test(p, 'Line will vanish', monkeypatch, now)
@@ -263,7 +263,7 @@ def test_static_empty_screen_clears_after_timeout(qapp, monkeypatch):
 
 
 def test_garbage_and_own_translation_not_counted_as_text(qapp, monkeypatch):
-    from lingolay.core.pipeline import Pipeline
+    from afudublaj.core.pipeline import Pipeline
     now = [1000.0]
     p = Pipeline(qapp)
     send = _setup_pipeline_for_test(p, 'Real dialog', monkeypatch, now)
@@ -292,7 +292,7 @@ def test_garbage_and_own_translation_not_counted_as_text(qapp, monkeypatch):
 
 
 def test_translation_arrives_after_text_gone(qapp, monkeypatch):
-    from lingolay.core.pipeline import Pipeline
+    from afudublaj.core.pipeline import Pipeline
     now = [1000.0]
     p = Pipeline(qapp)
     send = _setup_pipeline_for_test(p, 'Vanishing fast', monkeypatch, now)
@@ -318,7 +318,7 @@ def test_translation_arrives_after_text_gone(qapp, monkeypatch):
 
 
 def test_dialogue_retranslated_after_cleared(qapp, monkeypatch):
-    from lingolay.core.pipeline import Pipeline
+    from afudublaj.core.pipeline import Pipeline
     now = [1000.0]
     p = Pipeline(qapp)
     send = _setup_pipeline_for_test(p, 'Hello again.', monkeypatch, now)
@@ -356,8 +356,8 @@ def test_dialogue_retranslated_after_cleared(qapp, monkeypatch):
 
 
 def test_subtitle_clear_disabled_emits_no_signal(qapp, monkeypatch):
-    from lingolay.core.config import get_settings
-    from lingolay.core.pipeline import Pipeline
+    from afudublaj.core.config import get_settings
+    from afudublaj.core.pipeline import Pipeline
     monkeypatch.setattr(get_settings(), 'subtitle_clear_enabled', False)
 
     now = [1000.0]
@@ -381,9 +381,9 @@ def test_subtitle_clear_disabled_emits_no_signal(qapp, monkeypatch):
 
 
 def test_overlay_speaker_font_scaled_and_hidden_when_none(qtbot):
-    from lingolay.core.config import get_settings
-    from lingolay.overlay.window import OverlayWindow
-    from lingolay.text.cleaning import subtitle_lines
+    from afudublaj.core.config import get_settings
+    from afudublaj.overlay.window import OverlayWindow
+    from afudublaj.text.cleaning import subtitle_lines
 
     # Test subtitle_lines does not split ellipsis
     text_ellipsis = 'Wait... do not go.'

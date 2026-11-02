@@ -1,6 +1,6 @@
 import time
 
-from lingolay.text.cleaning import TextStabilizer
+from afudublaj.text.cleaning import TextStabilizer
 
 
 def make(**kw):

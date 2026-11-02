@@ -1,5 +1,5 @@
 """Veri klasörü AfuDublaj'a taşınır; eski Lingolay klasörü varsa içeriğiyle birlikte aktarılır."""
-from lingolay.core import paths
+from afudublaj.core import paths
 
 
 def test_eski_klasor_tasinir(tmp_path):

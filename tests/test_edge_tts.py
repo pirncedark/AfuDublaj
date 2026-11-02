@@ -4,8 +4,8 @@ import wave
 
 import pytest
 
-from lingolay.tts import edge_engine as ee
-from lingolay.tts import fast_dubbing as fd
+from afudublaj.tts import edge_engine as ee
+from afudublaj.tts import fast_dubbing as fd
 
 
 def _wav(frames=24, rate=24000):

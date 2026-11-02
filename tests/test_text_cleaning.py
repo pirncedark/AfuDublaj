@@ -1,6 +1,6 @@
 import pytest
 
-from lingolay.text.cleaning import clean_ocr_text, has_turkish_content, is_garbage, is_ui_noise, normalize_text, seq_ratio, split_speaker
+from afudublaj.text.cleaning import clean_ocr_text, has_turkish_content, is_garbage, is_ui_noise, normalize_text, seq_ratio, split_speaker
 
 
 @pytest.mark.parametrize('raw, expected', [
