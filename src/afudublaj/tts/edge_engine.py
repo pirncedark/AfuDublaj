@@ -163,7 +163,7 @@ class EdgeEngine:
             return None, 'edge-tts unavailable'
         try:
             return future.result(timeout=timeout or self._request_timeout + self._first_chunk_timeout), None
-        except concurrent.futures.TimeoutError:
+        except (concurrent.futures.TimeoutError, asyncio.TimeoutError):  # distinct classes before Python 3.11
             future.cancel()
             self._trip('request timed out')
             return None, 'edge-tts request timed out'
