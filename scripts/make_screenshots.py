@@ -1,6 +1,6 @@
 """Render the README images from the real app (headless).
 
-Requires an installed Fast model (lingolay --download fast). Usage:
+Requires an installed Fast model (afudublaj --download fast). Usage:
     QT_QPA_PLATFORM=offscreen python scripts/make_screenshots.py [--lang en|tr]
 
 Writes docs/images/main-window.png, translation-settings.png and demo.png.
@@ -39,15 +39,15 @@ def main():
     from PySide6.QtWidgets import QApplication
 
     app = QApplication.instance() or QApplication(sys.argv)
-    from lingolay.core.config import get_settings
-    from lingolay.i18n import set_language
+    from afudublaj.core.config import get_settings
+    from afudublaj.i18n import set_language
     s = get_settings()
     s.ui_language = args.lang
     s.source_lang, s.target_lang = 'en', args.target
     s.overlay.font_size = 28
     set_language(args.lang)
 
-    from lingolay.ui.main_window import MainWindow
+    from afudublaj.ui.main_window import MainWindow
     win = MainWindow()
     win.resize(1000, 900)
     win.show()
@@ -57,7 +57,7 @@ def main():
     # Real translation through the loaded engine
     translator = win._pipeline._translation_worker.translator
     result = translator.translate(DEMO_SOURCE)
-    from lingolay.text.turkish_postprocess import post_process_turkish
+    from afudublaj.text.turkish_postprocess import post_process_turkish
     translated = post_process_turkish(result.text) if args.target == 'tr' else result.text
     print('translation:', translated, result.latency_ms, 'ms')
 

@@ -4,7 +4,7 @@ import sys
 import numpy as np
 import pytest
 
-from lingolay.tts import game_audio
+from afudublaj.tts import game_audio
 
 
 def test_ring_buffer_keeps_the_latest_audio_in_order():
@@ -23,7 +23,7 @@ def test_ring_buffer_keeps_the_latest_audio_in_order():
 def test_process_loopback_starts_without_crashing():
     # Run in a child process: a wrong COM declaration would crash the interpreter, not just fail.
     code = (
-        'import time; from lingolay.tts.game_audio import GameAudioCapture\n'
+        'import time; from afudublaj.tts.game_audio import GameAudioCapture\n'
         'c = GameAudioCapture(); ok = c.start(); time.sleep(0.5)\n'
         'print("started" if ok else "error:", c.error, len(c.recent(0.5))); c.stop()\n'
     )

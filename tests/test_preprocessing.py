@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-from lingolay.preprocessing.filters import ImagePreprocessor
+from afudublaj.preprocessing.filters import ImagePreprocessor
 
 W, H, TEXT = 900, 90, 'Where were you when the city fell?'
 

@@ -1,4 +1,4 @@
-from lingolay.translation.nllb import NLLBTranslator
+from afudublaj.translation.nllb import NLLBTranslator
 
 # Issue #12: a three-line game subtitle (187 chars) lost its last words
 LONG = ('The Seven Shus assembled once again and, at tremendous cost, destroyed it, with only "Lantern" '

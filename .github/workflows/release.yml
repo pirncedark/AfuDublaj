@@ -21,30 +21,38 @@ jobs:
       - run: python -m pip install --upgrade pip
       - run: pip install ".[all]" pyinstaller
       - name: Build
-        run: pyinstaller packaging/lingolay.spec --noconfirm --clean
+        run: pyinstaller packaging/afudublaj.spec --noconfirm --clean
       - name: Smoke test
         shell: pwsh
         run: |
-          $p = Start-Process -FilePath dist/Lingolay/Lingolay.exe -ArgumentList "--version" -PassThru -Wait -NoNewWindow
+          $p = Start-Process -FilePath dist/AfuDublaj/AfuDublaj.exe -ArgumentList "--version" -PassThru -Wait -NoNewWindow
           if ($p.ExitCode -ne 0) { exit 1 }
           # Windowed exe has no console, so the self-test report is written to a file
           $env:LINGOLAY_SELFTEST_REPORT = "$PWD/selftest.txt"
-          $p = Start-Process -FilePath dist/Lingolay/Lingolay.exe -ArgumentList "--selftest" -PassThru -Wait -NoNewWindow
+          $p = Start-Process -FilePath dist/AfuDublaj/AfuDublaj.exe -ArgumentList "--selftest" -PassThru -Wait -NoNewWindow
           Get-Content selftest.txt
           if ($p.ExitCode -ne 0) { exit 1 }
       - name: Zip
         shell: pwsh
-        run: Compress-Archive -Path dist/Lingolay/* -DestinationPath "Lingolay-${{ github.ref_name }}-windows-x64.zip"
+        run: |
+          $zipName = "AfuDublaj-${{ github.ref_name }}-windows-x64.zip"
+          Compress-Archive -Path dist/AfuDublaj/* -DestinationPath $zipName
+          $hash = (Get-FileHash -Path $zipName -Algorithm SHA256).Hash.ToLower()
+          "$hash  $zipName" | Set-Content -Path "$zipName.sha256" -Encoding utf8
       # Manual runs on a branch: keep the zip as a downloadable test build instead of publishing a release
       - uses: actions/upload-artifact@v7
         if: ${{ !startsWith(github.ref, 'refs/tags/') }}
         with:
-          name: Lingolay-test-build-windows-x64
-          path: Lingolay-*-windows-x64.zip
+          name: AfuDublaj-test-build-windows-x64
+          path: |
+            AfuDublaj-*-windows-x64.zip
+            AfuDublaj-*-windows-x64.zip.sha256
           retention-days: 14
       - uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          files: Lingolay-*-windows-x64.zip
+          files: |
+            AfuDublaj-*-windows-x64.zip
+            AfuDublaj-*-windows-x64.zip.sha256
           generate_release_notes: true
           body_path: .github/RELEASE_NOTES.md

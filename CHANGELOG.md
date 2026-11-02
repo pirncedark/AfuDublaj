@@ -2,6 +2,18 @@
 
 All notable changes to this project are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [2.6.0-afu] — 2026-11-02
+
+### Added
+- Afu renkleri ve ikon
+- Afu Dublaj adı
+- tam Türkçe/Almanca/Rusça yerelleştirme
+- otomatik güncelleme (denetim, sha256 doğrulama, geri alma)
+- Ayarlar'da Güncelleme/Paylaş kartları
+
+### Changed
+- exe AfuDublaj.exe
+
 ## [2.5.3-afu] — 2026-11-02
 
 ### Fixed

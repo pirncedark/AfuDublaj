@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="../src/lingolay/assets/icon.png" width="112" alt="Логотип Lingolay">
+<img src="../src/afudublaj/assets/icon.png" width="112" alt="Логотип Lingolay">
 
 # Lingolay
 
@@ -48,17 +48,17 @@ Lingolay считывает субтитры с экрана, переводит
 
 ```bash
 git clone https://github.com/keremss7/lingolay.git
-cd lingolay
+cd AfuDublaj
 python -m venv .venv && .venv\Scripts\activate
 pip install -e ".[all]"
-lingolay
+afudublaj
 ```
 
 **Скачать модели из командной строки:**
 
 ```bash
-lingolay --list-models
-lingolay --download fast voice:ru     # модель перевода + русский голос для озвучки
+afudublaj --list-models
+afudublaj --download fast voice:ru     # модель перевода + русский голос для озвучки
 ```
 
 ## 🎯 Советы
