@@ -119,7 +119,8 @@ def test_first_chunk_timeout_opens_the_circuit():
     clock = _Clock()
     engine = ee.EdgeEngine(communicate=_FakeCommunicate, converter=_converter, first_chunk_timeout=0.05, clock=clock)
     # Slow first chunk: 200 ms > the 50 ms fallback window.
-    slow = lambda text, voice, rate='+0%', **kw: _FakeCommunicate(text, voice, rate=rate, delay=0.2)
+    def slow(text, voice, rate='+0%', **kw):
+        return _FakeCommunicate(text, voice, rate=rate, delay=0.2)
     engine._communicate = slow
     wav, err = engine.synthesize('Merhaba.', 'tr-TR-EmelNeural')
     assert wav is None and 'timed out' in err
@@ -187,7 +188,8 @@ def test_edge_failure_falls_back_to_the_same_line_with_piper():
 
 
 def test_edge_timeout_falls_back_to_piper():
-    slow = lambda text, voice, rate='+0%', **kw: _FakeCommunicate(text, voice, rate=rate, delay=0.2)
+    def slow(text, voice, rate='+0%', **kw):
+        return _FakeCommunicate(text, voice, rate=rate, delay=0.2)
     edge = ee.EdgeEngine(communicate=slow, converter=_converter, first_chunk_timeout=0.05, clock=_Clock())
     eng, piper = _engine(edge)
     audio = eng._synthesize_text('Merhaba.', None, None, None, '+35%', 0)

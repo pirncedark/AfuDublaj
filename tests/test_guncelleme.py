@@ -101,8 +101,8 @@ def test_kontrol_et_bozuk_json_none():
 def test_indir_dogru_sha(tmp_path):
     zip_verisi = _zip_bytes()
     sha = hashlib.sha256(zip_verisi).hexdigest()
-    indirmeler = {f'https://github.com/pirncedark/AfuDublaj/releases/download/x/v3.0.0.zip': zip_verisi,
-                  f'https://github.com/pirncedark/AfuDublaj/releases/download/x/v3.0.0.zip.sha256': f'{sha}  Afu Dublaj.zip'.encode()}
+    indirmeler = {'https://github.com/pirncedark/AfuDublaj/releases/download/x/v3.0.0.zip': zip_verisi,
+                  'https://github.com/pirncedark/AfuDublaj/releases/download/x/v3.0.0.zip.sha256': f'{sha}  Afu Dublaj.zip'.encode()}
     ilerleme = []
     hedef = tmp_path / 'a.zip'
     sonuc = indir(
@@ -119,8 +119,8 @@ def test_indir_dogru_sha(tmp_path):
 def test_indir_bozuk_sha_dosyayi_siler(tmp_path):
     zip_verisi = _zip_bytes()
     yanlis = hashlib.sha256(b'baska').hexdigest()
-    indirmeler = {f'https://github.com/pirncedark/AfuDublaj/releases/download/x/v3.0.0.zip': zip_verisi,
-                  f'https://github.com/pirncedark/AfuDublaj/releases/download/x/v3.0.0.zip.sha256': yanlis.encode()}
+    indirmeler = {'https://github.com/pirncedark/AfuDublaj/releases/download/x/v3.0.0.zip': zip_verisi,
+                  'https://github.com/pirncedark/AfuDublaj/releases/download/x/v3.0.0.zip.sha256': yanlis.encode()}
     hedef = tmp_path / 'a.zip'
     with pytest.raises(GuncellemeHatasi, match='could not be verified'):
         indir(

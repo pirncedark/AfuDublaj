@@ -10,6 +10,7 @@ Verifies:
 import ast
 import json
 from pathlib import Path
+
 import pytest
 
 from afudublaj.i18n import LOCALES_DIR

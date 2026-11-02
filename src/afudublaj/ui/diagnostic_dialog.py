@@ -8,7 +8,7 @@ from PySide6.QtCore import QUrl
 from PySide6.QtGui import QDesktopServices, QFont, QGuiApplication
 from PySide6.QtWidgets import QDialog, QHBoxLayout, QLabel, QPushButton, QTextEdit, QVBoxLayout
 
-from afudublaj import APP_NAME, __app_name__, __version__
+from afudublaj import APP_NAME, __version__
 from afudublaj.i18n import t
 
 logger = logging.getLogger(__name__)

@@ -25,7 +25,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from afudublaj import APP_NAME, __app_name__
+from afudublaj import APP_NAME
 from afudublaj.i18n import t
 
 logger = logging.getLogger(__name__)

@@ -1,8 +1,7 @@
 import logging
 import sys
-from pathlib import Path
-
 import threading
+from pathlib import Path
 
 from PySide6.QtCore import Qt, QTimer, Signal
 from PySide6.QtGui import QBrush, QColor, QFont, QGuiApplication, QIcon, QKeySequence, QPainter
