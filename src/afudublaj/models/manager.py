@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 SENTINEL_FILE = '.installed'
 MODEL_BIN = 'model.bin'
 _CHUNK = 256 * 1024
-_USER_AGENT = 'Lingolay (+https://github.com/keremss7/lingolay)'
+_USER_AGENT = 'AfuDublaj (+https://github.com/pirncedark/AfuDublaj)'
 
 
 class DownloadCancelled(Exception):

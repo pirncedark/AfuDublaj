@@ -67,7 +67,7 @@ def _run_cli(argv):
     parser.add_argument('--list-models', action='store_true', help='list downloadable models/voices and their status')
     parser.add_argument('--download', nargs='+', metavar='MODEL', help='download models: fast, quality, voice:<lang> (e.g. voice:tr)')
     parser.add_argument('--listen-test', nargs='?', const=15, type=int, metavar='SECONDS',
-                        help='listen to system audio (without Lingolay) and report level and speaker gender')
+                        help='listen to system audio (without Afu Dublaj) and report level and speaker gender')
     args, _qt_args = parser.parse_known_args(argv)
     if args.version:
         _print(f'{__app_name__} {__version__}')
@@ -119,7 +119,7 @@ def _run_cli(argv):
 
 
 def _listen_test(seconds):
-    """Capture system audio (excluding Lingolay) and report level and detected speaker gender per second."""
+    """Capture system audio (excluding Afu Dublaj) and report level and detected speaker gender per second."""
     import time
 
     import numpy as np
@@ -129,7 +129,7 @@ def _listen_test(seconds):
     from afudublaj.tts.game_audio import GameAudioCapture, is_supported
 
     report_path = LOG_FILE.parent / 'listen-test.txt'
-    lines = [f'Lingolay {__version__} listen test ({seconds} s). Play a game or video with people talking.', '']
+    lines = [f'Afu Dublaj {__version__} listen test ({seconds} s). Play a game or video with people talking.', '']
 
     def finish(code):
         report = '\n'.join(lines)
@@ -174,7 +174,7 @@ def _listen_test(seconds):
             lines.append(f'{second:3d}s  level {level:6.1f} dB{verdict}')
     finally:
         capture.stop()
-    lines += ['', 'Tip: -60 dB or lower means silence. Lingolay\'s own dubbing is never captured.']
+    lines += ['', 'Tip: -60 dB or lower means silence. Afu Dublaj\'s own dubbing is never captured.']
     return finish(0)
 
 
@@ -314,7 +314,7 @@ def main(argv=None):
 
     if not _acquire_single_instance():
         logger.warning('[Bootstrap] Another instance is already running — exiting')
-        QMessageBox.information(None, __app_name__, t('Lingolay is already running.'))
+        QMessageBox.information(None, __app_name__, t('Afu Dublaj is already running.'))
         sys.exit(0)
 
     from afudublaj.ui.main_window import _asset_path

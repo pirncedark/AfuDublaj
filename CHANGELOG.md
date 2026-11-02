@@ -2,6 +2,11 @@
 
 All notable changes to this project are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [2.6.1-afu] — 2026-11-02
+
+### Fixed
+- `--version`, window titles and messages show the new name Afu Dublaj; the Turkish and Russian README links point to this repository.
+
 ## [2.6.0-afu] — 2026-11-02
 
 ### Added

@@ -1,8 +1,8 @@
 """
-Listen to what the user hears, minus Lingolay itself (Windows 10 version 2004 or later).
+Listen to what the user hears, minus Afu Dublaj itself (Windows 10 version 2004 or later).
 
 Uses WASAPI *process loopback* in "exclude target process tree" mode with our own process id,
-so the game or video is captured but Lingolay's dubbing voice is not. Audio is converted by
+so the game or video is captured but Afu Dublaj's dubbing voice is not. Audio is converted by
 Windows to 16 kHz mono and the last few seconds are kept in a ring buffer for speaker-gender
 detection. Nothing is recorded to disk.
 """
@@ -239,7 +239,7 @@ def _capture_loop(capture):
 
     client.Start()
     capture._ready.set()
-    logger.info('[GameAudio] Capturing system audio (excluding Lingolay) at %d Hz', SAMPLE_RATE)
+    logger.info('[GameAudio] Capturing system audio (excluding Afu Dublaj) at %d Hz', SAMPLE_RATE)
     try:
         packet, data, frames, buf_flags = c_uint32(), c_void_p(), c_uint32(), wintypes.DWORD()
         while not capture._stop.is_set():
