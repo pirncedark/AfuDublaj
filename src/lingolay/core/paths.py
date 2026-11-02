@@ -3,6 +3,18 @@ import sys
 from pathlib import Path
 
 
+def _migrate_legacy(base):
+    """Data folder is now 'AfuDublaj'; an existing 'Lingolay' folder is moved over (settings, models, voices).
+    If the move is impossible (old app still running, folder locked) the old folder keeps being used."""
+    new, old = base / 'AfuDublaj', base / 'Lingolay'
+    if not new.exists() and old.exists():
+        try:
+            old.rename(new)
+        except OSError:
+            return old
+    return new
+
+
 def _default_data_dir():
     """Per-platform user data directory. Override with LINGOLAY_HOME (portable mode)."""
     override = os.environ.get('LINGOLAY_HOME')
@@ -14,7 +26,7 @@ def _default_data_dir():
         base = Path.home() / 'Library' / 'Application Support'
     else:
         base = Path(os.environ.get('XDG_DATA_HOME', Path.home() / '.local' / 'share'))
-    return base / 'Lingolay'
+    return _migrate_legacy(base)
 
 
 APP_DATA_DIR = _default_data_dir()
